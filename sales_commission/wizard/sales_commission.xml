@@ -1,0 +1,31 @@
+<odoo>
+    <data>
+        <record id="view_generate_commission" model="ir.ui.view">
+            <field name="name">generate.sales.commission</field>
+            <field name="model">generate.sales.commission</field>
+            <field name="arch" type="xml">
+                <form string="Generate Commission">
+                    <sheet>
+                        <group col="4">
+                            <field name="month"/>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="View Commission Diff" type="object" name="generate_commission" class="btn-primary"/>
+                        <button string="Export Commission CSV" type="object" name="generate_diff_csv" class="btn-primary"/>
+                        <button special="cancel" string="Cancel" class="btn-default"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="generate_sales_commission" model="ir.actions.act_window">
+            <field name="name">Generate commission</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">generate.sales.commission</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_generate_commission"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

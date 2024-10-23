@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.menu" id="stock.menu_action_inventory_tree">
+            <field eval="[(6,0,[ref('price_paper.group_update_product_on_hand_qty')])]" name="groups_id"/>
+        </record>
+        <record id="product_form_view_procurement_button_inherit_price_paper" model="ir.ui.view">
+            <field name="name">product.product.location</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="stock.product_form_view_procurement_button"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_update_quantity_on_hand']" position="attributes">
+                    <attribute name="groups">price_paper.group_update_product_on_hand_qty</attribute>
+                </xpath>
+            </field>
+        </record>
+        <record id="product_kanban_view_inherit_pricepaper" model="ir.ui.view">
+          <field name="name">product.kanban.view.inherit.pricepaper</field>
+          <field name="model">product.product</field>
+          <field name="inherit_id" ref="product.product_kanban_view"/>
+          <field name="arch" type="xml">
+            <xpath expr="//templates/t/div/div[2]/ul/li/strong/field[@name='lst_price']" position="after">
+                <field name="lst_from_std_price"/>
+            </xpath>
+            <xpath expr="//templates/t/div/div[2]/ul/li/strong/field[@name='lst_price']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+          </field>
+        </record>
+        <record id="product_tree_view_inherit_pricepaper" model="ir.ui.view">
+            <field name="name">product.tree.view.inherit.pricepaper</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_product_tree_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='lst_price']" position="after">
+                    <field name="lst_from_std_price"/>
+                </xpath>
+                <xpath expr="//field[@name='lst_price']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='name']" position="attributes">
+                   <attribute name="invisible">1</attribute>
+                </xpath>
+                 <xpath expr="//field[@name='categ_id']" position="attributes">
+                   <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='default_code']" position="after">
+                    <field name="categ_id"/>
+                    <field name="name"/>
+                </xpath>
+                <xpath expr="//field[@name='barcode']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='uom_id']" position="after">
+                    <field name="vendor_id"/>
+                    <field name="property_stock_location"/>
+                    <field name="value_svl" sum="Stock Valuation" widget="monetary" string="Total Value" optional="hide"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="product_product_common_inherit_pricepaper" model="ir.ui.view">
+            <field name="name">product.product.common.pricepaper</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <field name="is_base_user" invisible="1"/>
+                    <button class="oe_stat_button"
+                            type="action" name="%(price_paper.act_product_2_product_notes)d"
+                            string=" Product Notes" icon="fa-sticky-note"/>
+                     <button class="oe_stat_button"
+                             readonly="True"
+                             attrs="{'invisible':[('is_base_user', '=', False)]}"
+                             name="action_open_quants"
+                             icon="fa-cubes"
+                             type="object"
+                               >
+                         <div class="o_field_widget o_stat_info">
+                                    <span class="o_stat_value">
+                                        <field name="qty_available" widget="statinfo" nolabel="1" class="mr4"/>
+                                        <field name="uom_name"/>
+                                    </span>
+                                    <span class="o_stat_text">On Hand</span>
+                         </div>
+                        </button>
+                </xpath>
+
+                <xpath expr="//div[@name='standard_price_uom']" position="after">
+                    <field name="burden_percent"
+                           groups="sales_team.group_sale_manager"/>
+                    <field name="cost" widget="monetary"
+                           options="{'currency_field': 'currency_id', 'field_digits': True}"/>
+                </xpath>
+
+                <field name="detailed_type" position="before">
+                    <field name="need_sub_product"/>
+                </field>
+
+                <xpath expr="//field[@name='standard_price']" position="attributes">
+                    <attribute name='groups'>sales_team.group_sale_manager</attribute>
+                </xpath>
+                <xpath expr="//field[@name='uom_id']" position="before">
+                    <field name="sale_uoms" widget="many2many_tags" required="1"/>
+                </xpath>
+                <xpath expr="//field[@name='uom_id']" position="attributes">
+                    <attribute name='domain'>[('product_ids.id', '=', active_id)]</attribute>
+                </xpath>
+
+                <!-- <xpath expr="//field[@name='uom_po_id']" position="attributes">
+                    <attribute name='domain'>[('product_ids.id', '=', active_id)]</attribute>
+                </xpath> -->
+
+                <xpath expr="//notebook" position="inside">
+                    <page name='addons_product' string='Addons Products'
+                          attrs="{'invisible': [('need_sub_product', '=', False)]}">
+                        <field name="product_addons_list" nolabel="1"
+                               attrs="{'required': [('need_sub_product', '=', True)]}"/>
+                    </page>
+                    <page name='superseded' string='Superseded Products'>
+                        <field name="new_products" invisible="1"/>
+                        <field name="superseded"
+                               attrs="{'invisible':[('active', '=', False)]}"
+                               context="{'default_product_child_id':id}"
+                               domain="[('product_child_id', '=', id)]"
+                               help="Select a product that has been archived that this product will replace"
+                               nolabel="1">
+                            <tree>
+                                <field name='old_product'/>
+                            </tree>
+                            <form>
+                                <group>
+                                    <field name='old_product'/>
+                                </group>
+                            </form>
+                        </field>
+                    </page>
+                    <page name='standard_price' string='Standard Price'>
+                        <group string="Standard Price">
+                            <field name="standard_price_date_lock"/>
+                            <field name="uom_standard_prices"
+                                   context="{'default_product_id':id}"
+                                   domain="[('product_id', '=', id)]"
+                                   groups="sales_team.group_sale_salesman"
+                                   nolabel="1"
+                                   mode="tree,kanban">
+                                <tree>
+                                    <field name='uom_id'/>
+                                    <field name='price'/>
+                                </tree>
+                                <kanban class="o_kanban_mobile">
+                                    <field name="product_id"/>
+                                    <field name="uom_id"/>
+                                    <field name="price"/>
+                                    <field name="cost"/>
+                                    <field name="price_margin"/>
+                                    <templates>
+                                        <t t-name="kanban-box">
+                                            <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                                                <div class="row">
+                                                    <div class="col-8">
+                                                        <strong>
+                                                            <span>
+                                                                <t t-esc="record.uom_id.value"/>
+                                                            </span>
+                                                        </strong>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <strong>
+                                                            <span class="float-right text-right badge badge-info">
+                                                                <t t-esc="record.price.value"/>
+                                                            </span>
+                                                        </strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>
+                                <form>
+                                    <group>
+                                        <group>
+                                            <field name='product_id'/>
+                                            <field name='uom_id'/>
+                                        </group>
+                                        <group>
+                                            <field name='cost'/>
+                                            <field name='price'/>
+                                            <field name='price_margin'/>
+                                        </group>
+                                    </group>
+                                </form>
+                            </field>
+                        </group>
+                        <group>
+                            <field name='similar_product_ids' widget="many2many_tags"/>
+                        </group>
+                    </page>
+                </xpath>
+                <xpath expr="//field[@name='list_price']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//label[@for='list_price']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <field name="tax_string" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
+            </field>
+        </record>
+
+
+        <record id="product_search_form_view_price_paper" model="ir.ui.view">
+            <field name="name">product.product.search</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_search_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='name']" position="attributes">
+                    <attribute name="filter_domain">['|', '|', '|', ('superseded.old_product.default_code', '=', self),
+                        ('default_code', 'ilike', self), ('name', 'ilike', self),
+                        ('barcode', 'ilike', self)]
+                    </attribute>
+                </xpath>
+                <xpath expr="//field[@name='name']" position="after">
+                    <field name="vendor_id" string="Vendor"
+                           filter_domain="[('vendor_id','ilike',self)]"/>
+                    <field name="default_code" string="Internal reference"
+                           filter_domain="[('default_code','ilike',self)]"/>
+                    <field name="description" string="Internal Notes"
+                           filter_domain="[('description','ilike',self)]"/>
+                </xpath>
+                <xpath expr="//filter[@name='consumable']" position="after">
+                    <separator/>
+                    <filter name="is_abv_max_qty" string="Above Max Qty" domain="[('is_abv_max_qty','=',True)]"/>
+                    <filter name="is_bel_min_qty" string="Below Min Qty" domain="[('is_bel_min_qty','=',True)]"/>
+                    <filter name="is_bel_crit_qty" string="Critically Low" domain="[('is_bel_crit_qty','=',True)]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Vendor" name="groupby_vendor"
+                                domain="[]" context="{'group_by': 'vendor_id'}"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

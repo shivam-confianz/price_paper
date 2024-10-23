@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- account.account.type -->
+        <record model="account.journal" id="account_journal_cash_to_bank">
+            <field name="name">Cash to Bank</field>
+            <field name="type">cash</field>
+            <field name="code">CSBK</field>
+        </record>
+    </data>
+</odoo>

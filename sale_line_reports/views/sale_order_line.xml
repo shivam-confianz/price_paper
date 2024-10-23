@@ -1,0 +1,132 @@
+<odoo>
+    <data>
+        <record id="sale_line_reports_price_paper_tree" model="ir.ui.view">
+            <field name="name">sale.order.line.price.paper</field>
+            <field name="model">sale.order.line</field>
+            <field name="priority">1000</field>
+            <field name="arch" type="xml">
+                <tree string="Sales Order Lines" editable="top" create="0" edit="0">
+                    <field name="order_partner_id" readonly="1" string="CUSTOMER NAME"/>
+                    <field name="order_id" readonly="1" string="ORDER#"/>
+                    <field name="date_order" readonly="1" string="ORDER DATE"/>
+                    <field name="deliver_by" readonly="1" string="Deliver By"/>
+                    <field name="customer_po" readonly="1" string="CUST P/O #"/>
+                    <field name="product_id" readonly="1" string="ITEM #"/>
+                    <field name="is_taxed" readonly="1" string="TX"/>
+                    <field name="product_uom_qty" readonly="1" string="QTY"/>
+                    <field name="product_uom" readonly="1" string="PU" widget="selection"/>
+                    <field name="working_cost" readonly="1" string="COST"/>
+                    <field name="lst_price" readonly="1"/>
+                    <field name="price_unit" readonly="1" string="UNIT PRICE"/>
+                    <field name="percent" string="PCT"/>
+                    <field name="remark"/>
+                    <button name="action_view_sale_order" type="object" icon="fa-info-circle" aria-label="Sale Order" title="Sale Order"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="sales_order_line_filter_report" model="ir.ui.view">
+            <field name="name">sale.order.line.report</field>
+            <field name="model">sale.order.line</field>
+            <field name="arch" type="xml">
+                <search string="Search Sales Order">
+                    <filter name="to_invoice" string="To Invoice" domain="[('qty_to_invoice','!=', 0)]"
+                            help="Sales Order Lines ready to be invoiced"/>
+                    <filter name="not_in_done" string="Open Order Lines" domain="[('order_id.state','not in', ('done', 'cancel'))]"
+                            help="Sales Order Lines Not in Done,Cancel state"/>
+                    <separator/>
+                    <filter name='salesman_orders' string="My Sales Order Lines" domain="[('salesman_id','=',uid)]"
+                            help="Sales Order Lines related to a Sales Order of mine"/>
+                    <field name="product_id"/>
+                    <field name="order_id"/>
+                    <field name="order_partner_id" operator="child_of"/>
+                    <field name="salesman_id"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Product" name='group_by_product_id' context="{'group_by':'product_id'}"/>
+                        <filter string="Order" name='group_by_order_id' context="{'group_by':'order_id'}"/>
+                        <filter string="Salesperson" name='group_by_salesman_id' context="{'group_by':'salesman_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_sale_line_reports_price_paper" model="ir.actions.act_window">
+            <field name="name">Sales Order Lines</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sale.order.line</field>
+            <field name="view_mode">tree</field>
+            <field name="search_view_id" ref="sales_order_line_filter_report"/>
+            <field name="domain">[('product_id', '!=', False)]</field>
+            <field name="context">{'search_default_not_in_done': 1, 'custom_search':True, 'group_by':['product_id']}</field>
+        </record>
+
+        <record model="ir.actions.act_window.view" id="action_sale_line_reports_price_paper_tree">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="sale_line_reports_price_paper_tree"/>
+            <field name="act_window_id" ref="action_sale_line_reports_price_paper"/>
+        </record>
+
+        <menuitem id="menu_sales_lines_report"
+                  name="Sale Order Lines"
+                  action="action_sale_line_reports_price_paper"
+                  parent="sale.sale_order_menu"
+                  groups="sales_team.group_sale_salesman"
+                  sequence="1000"
+        />
+        <record id="sale.action_order_report_all" model="ir.actions.act_window">
+            <field name="view_mode">pivot,graph</field>
+        </record>
+        <record id="view_order_product_pivot_inherit" model="ir.ui.view">
+            <field name="name">sale.report.pivot</field>
+            <field name="model">sale.report</field>
+            <field name="inherit_id" ref="sale.view_order_product_pivot"/>
+            <field name="arch" type="xml">
+               <field name="price_subtotal" position='replace'>
+                  <field name="product_uom_qty" type="measure"/>
+               </field>
+            </field>
+        </record>
+
+        <record id="view_order_product_search_inherit" model="ir.ui.view">
+            <field name="name">sale.report.search</field>
+            <field name="model">sale.report</field>
+            <field name="inherit_id" ref="sale.view_order_product_search"/>
+            <field name="arch" type="xml">
+               <field name="user_id" position='replace'>
+                  <field name="sales_persons"/>
+               </field>
+               <filter name="User" position='replace'>
+                  <filter string="Salesperson" name="sales_persons_ids" context="{'group_by':'sales_persons'}"/>
+               </filter>
+               <filter name="year" position="after">
+                   <filter string="Current Fiscal year" name= "current_fiscal_year" domain="[('name', '=', 'current_fiscal_year')]" />
+                   <filter string="Last Fiscal year" name= "last_fiscal_year" domain="[('name', '=', 'last_fiscal_year')]" />
+                   <separator/>
+               </filter>
+            </field>
+        </record>
+
+        <record id="sale_report_view_tree_inherit" model="ir.ui.view">
+            <field name="name">sale.report.tree</field>
+            <field name="model">sale.report</field>
+            <field name="inherit_id" ref="sale.sale_report_view_tree"/>
+            <field name="arch" type="xml">
+               <field name="user_id" position='replace'>
+                  <field name="sales_persons"/>
+               </field>
+            </field>
+        </record>
+
+        <record id="view_order_product_graph_inherit" model="ir.ui.view">
+             <field name="name">sale.report.graph</field>
+             <field name="model">sale.report</field>
+             <field name="inherit_id" ref="sale.view_order_product_graph"/>
+             <field name="arch" type="xml">
+               <field name="price_subtotal" position='replace'>
+                  <field name="product_uom_qty" type="measure"/>
+               </field>
+             </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_sale_history_add_po_wiz" model="ir.ui.view">
+            <field name="name">add.sale.history.to.po</field>
+            <field name="model">add.sale.history.po</field>
+            <field name="arch" type="xml">
+                <form string="Add Products from sales history">
+                    <sheet>
+                        <script>
+                            $(document).ready(function(){
+                                $('.modal-dialog').css({'max-width':'90%'});
+                            });
+                        </script>
+                        <style>
+                            .custom_column [data-name="product_pseudo_id"]{
+                            width: 400px !important;
+                            max-width: 400px !important;
+                            }
+                        </style>
+                        <style>
+                            .o_field_widget[name=sale_history_ids] .o_list_view tr  td:nth-child(even){background-color:#D0D0D0 !important;}
+
+                        </style>
+                        <p class="oe_grey">
+                            <b>Please enter the new quantity before pressing ADD LINE button to add the product to the
+                                order.</b>
+                        </p>
+                        <p class="oe_grey">
+                            <b>Lines in red color means that there are other vendors with lower price for this
+                                product.</b>
+                        </p>
+                        <field name="vendor_id" invisible="1"/>
+                        <separator string="Sales History"/>
+                        <group>
+                            <group>
+                                <field name="search_box"
+                                       placeholder=" Use product name, product internal reference to search."/>
+                            </group>
+                        </group>
+                        <field name="sale_history_ids">
+                            <tree create="0" delete="0" editable="top" decoration-danger="is_not_lowest_price==True" decoration-muted="is_expired==True"
+                                  limit="10" class="custom_column">
+                                <field name="new_qty" style="color:blue" help="New quantity to be ordered"/>
+                                <field name="product_pseudo_id" widget="product_external_drilldown" readonly="1"
+                                       tabindex="0"/>
+                                <field name="product_id" invisible="1"/>
+                                <field name="product_uom" readonly='1' tabindex="0" widget="selection"
+                                       help="Unit of measure"/>
+                                <field name="min_qty" readonly='1' tabindex="0" help="Minimum quantity to purchase" style="color:#002780;font-weight: bold;"/>
+                                <field name="product_oh_qty" readonly='1' tabindex="0" help="On hand quantity" style="background:#FFFF99;" />
+                                <field name="product_ip_qty" readonly='1' tabindex="0" help="In Purchase quantity"/>
+                                <field name="product_price" readonly='1' tabindex="0"
+                                       help="Price for which this product is ordered from this vendor"/>
+                                <field name="is_not_lowest_price" invisible="1"/>
+                                <field name="is_expired" invisible="1"/>
+                                <field name="op_min" readonly="1" tabindex="0"/>
+                                <field name="op_max" readonly="1" tabindex="0"/>
+                                <field name="month1" readonly='1' tabindex="0"/>
+                                <field name="month2" readonly='1' tabindex="0"/>
+                                <field name="month3" readonly='1' tabindex="0"/>
+                                <field name="month4" readonly='1' tabindex="0"/>
+                                <field name="month5" readonly='1' tabindex="0"/>
+                                <field name="month6" readonly='1' tabindex="0"/>
+                                <field name="month7" readonly='1' tabindex="0"/>
+                                <field name="month8" readonly='1' tabindex="0"/>
+                                <field name="month9" readonly='1' tabindex="0"/>
+                                <field name="month10" readonly='1' tabindex="0"/>
+                                <field name="month11" readonly='1' tabindex="0"/>
+                                <field name="month12" readonly='1' tabindex="0"/>
+                                <field name="month13" readonly='1' tabindex="0"/>
+                                <field name="month14" readonly='1' tabindex="0"/>
+                                <field name="month15" readonly='1' tabindex="0"/>
+                            </tree>
+                        </field>
+                        <footer>
+                            <button string="Add Line" type="object" name="add_history_lines"/>
+                            or
+                            <button string="Cancel" class="oe_link" special="cancel"/>
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

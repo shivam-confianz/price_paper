@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="res_company_inherit_returned_check" model="ir.ui.view">
+            <field name="name">res.company.pricepaper.orderpoint</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="price_paper.res_company_inherit_price_paper"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='burden_percent']" position="after">
+                    <field name='check_bounce_product'/>
+                    <field name='check_bounce_term'/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_stock_move_cancel_window" model="ir.ui.view">
+            <field name="name">stock.move.cancel.window</field>
+            <field name="model">stock.move</field>
+            <field name="arch" type="xml">
+                <form>
+                    <div class="alert alert-danger" role="alert" style="margin-bottom:0px;">
+                        Are you sure you want to cancel this move ? You cannot roll back this action
+                    </div>
+                    <group>
+                        <group>
+                            <field name="product_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="product_uom_qty" readonly="1"/>
+                        </group>
+                    </group>
+                    <footer class="oe_edit_only">
+                        <button string="Proceed" type="object" name="action_cancel_move" class="btn-danger"/>
+                        <button string="Discard" special="cancel" class="btn-success"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="view_stock_move_nosuggest_reson_for_return_operations" model="ir.ui.view">
+            <field name="name">stock.move.operations.reason.for.return.form</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="stock.view_stock_move_operations"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group/group[position()=1]" position="after">
+                    <group>
+                        <field name="location_dest_id"/>
+                        <field name="is_reason_added" invisible="1"/>
+                        <field name="reason_id" attrs="{'required': [('is_reason_added', '=', True)]}"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="stock_move_tree_inherit_batch_delivery" model="ir.ui.view">
+            <field name="name">batch.delivery.stock.move.tree</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="stock.view_move_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_uom_qty']" position="after">
+                    <field name="quantity_done"/>
+                </xpath>
+                <xpath expr="//field[@name='reference']" position="after">
+                    <field name="partner_id"/>
+                </xpath>
+                <xpath expr="//field[@name='date']" position="attributes">
+                    <attribute name="groups"></attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="stock_move_search_inherit_batch_delivery" model="ir.ui.view">
+            <field name="name">batch.delivery.stock.move.search.view</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="stock.view_move_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='future']" position="attributes">
+                    <attribute name="domain">[('state', 'in', ('partially_available', 'confirmed', 'waiting'))]</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="pending_product_move_tree" model="ir.ui.view">
+            <field name="name">stock.move.tree</field>
+            <field name="model">stock.move</field>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Moves" create="0" editable="top">
+                    <!-- <field name="reference" readonly="1"/> -->
+                    <field name="transit_picking_id" readonly="1" string="Reference"/>
+                    <field name="picking_type_id" invisible="1"/>
+                    <field name="partner_id"/>
+                    <field name="product_id" readonly="1" optional="hide"/>
+                    <field name="product_uom_qty" readonly="1"/>
+                    <field name="availability" string="Available Quantity" readonly="1"/>
+                    <field name="product_uom" options="{'no_open': True, 'no_create': True}" string="Unit of Measure" groups="uom.group_uom"
+                           readonly="1"/>
+                    <field name="reserved_availability" readonly="1"/>
+                    <field name="qty_update" string="Reset Logic" invisible="1"/>
+                    <field name="procure_method" string="Reset Logic" invisible="1"/>
+                    <button name="action_show_reset_window" string="reset" type="object"
+                            attrs="{'invisible': [('procure_method', '!=', 'make_to_stock')]}" icon="fa-refresh text-success"/>
+                    <field name="state" readonly="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="stock_move_pending_product_action" model="ir.actions.act_window">
+            <field name="name">Pending Product</field>
+            <field name="res_model">stock.move</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="pending_product_move_tree"/>
+            <field name="search_view_id" ref="stock.view_move_search"/>
+            <field name="context">{'search_default_future': 1, 'search_default_by_product': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No Pending Moves..
+                </p>
+            </field>
+        </record>
+
+        <record id="view_move_line_tree_inherit_price_paper" model="ir.ui.view">
+            <field name="name">stock.move.line.tree</field>
+            <field name="model">stock.move.line</field>
+            <field name="inherit_id" ref="stock.view_move_line_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree" position="attributes">
+                    <attribute name="default_order">date desc</attribute>
+                </xpath>
+                <xpath expr="//field[@name='product_uom_id']" position="after">
+                    <field name="product_onhand_qty"/>
+                </xpath>
+            </field>
+        </record>
+
+
+        <record id="view_move_picking_form_inherit_batch_delivery" model="ir.ui.view">
+            <field name="name">view.move.picking.form.inherit.batch.delivery</field>
+            <field name="model">stock.move</field>
+            <field eval="999" name="priority"/>
+            <field name="inherit_id" ref="stock.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet" position="after">
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

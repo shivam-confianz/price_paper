@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="stock_move_by_location_form">
+            <field name="name">stock_move_by_location.form</field>
+            <field name="model">stock.move.by.location</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form string="Product Moves by Location">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="date"/>
+                                <field name="picking_id"/>
+                                <field name="product_id"/>
+                                <field name="uom_id"/>
+                                <field name="categ_id"/>
+                            </group>
+                            <group>
+                                <field name="location_id"/>
+                                <field name="name"/>
+                                <field name="product_qty_pending"/>
+                                <field name="description"/>
+                            </group>
+                        </group>
+
+                    </sheet>
+
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="stock_move_by_location_list">
+            <field name="name">stock_move_by_location.list</field>
+            <field name="model">stock.move.by.location</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <tree string="Product Moves by Location" editable="bottom">
+                    <field name="categ_id"/>
+                    <field name="date"/>
+                    <field name="product_id"/>
+                    <field name="uom_id"/>
+                    <field name="name" sum="Product Qty"/>
+                    <field name="product_qty_pending" sum="Product Qty Pending"/>
+                    <field name="picking_id"/>
+                    <field name="location_id"/>
+                    <field name="description"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="stock_move_by_location_act1">
+            <field name="name">Product Moves by Location</field>
+            <field name="res_model">stock.move.by.location</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <record model="ir.actions.act_window.view" id="stock_move_by_location_act1_view2">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="stock_move_by_location_list"/>
+            <field name="act_window_id" ref="stock_move_by_location_act1"/>
+        </record>
+
+        <record model="ir.actions.act_window.view" id="stock_move_by_location_act1_view1">
+            <field name="sequence" eval="2"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="stock_move_by_location_form"/>
+            <field name="act_window_id" ref="stock_move_by_location_act1"/>
+        </record>
+
+        <menuitem
+                action="stock_move_by_location_act1"
+                id="menu_stock_move_by_location_list"
+                parent="stock.menu_warehouse_report"
+                sequence="150"/>
+
+         <record id="act_product_moves" model="ir.actions.act_window">
+            <field name="name">Product Moves</field>
+            <field name="res_model">stock.move.by.location</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+             <field name="binding_model_id" ref="product.model_product_product"/>
+            <field name="binding_view_types">form</field>
+    </record>
+
+
+    </data>
+</odoo>

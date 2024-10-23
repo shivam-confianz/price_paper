@@ -1,0 +1,169 @@
+<odoo>
+    <data>
+        <record id="purchase_order_search_inherit_pp" model="ir.ui.view">
+            <field name="name">purchase.order.list.select.inherit</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.view_purchase_order_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='draft']" position="attributes">
+                    <attribute name="domain">[('state', 'in', ('draft', 'to approve'))]</attribute>
+                </xpath>
+                <xpath expr="//filter[@name='draft']" position="after">
+                    <filter name="in_progress" string="In progress" domain="[('state', 'in', ('in_progress', 'sent'))]"/>
+                </xpath>
+            </field>
+        </record>
+        <record id="purchase_order_inherit_price_paper" model="ir.ui.view">
+            <field name="name">Purchase.order.form.pricepaper</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='button_cancel']" position="attributes">
+                    <attribute name="states">draft,in_progress,to approve,sent,purchase</attribute>
+                </xpath>
+                <xpath expr="//button[@name='print_quotation'][1]" position="attributes">
+                    <attribute name="states">draft,in_progress</attribute>
+                </xpath>
+                <xpath expr="//button[@name='action_rfq_send'][1]" position="attributes">
+                    <attribute name="states">draft,in_progress</attribute>
+                </xpath>
+                <xpath expr="//button[@name='button_confirm']" position="before">
+                    <button name="action_in_progress" type="object" states="draft" string="In Progress" class="oe_highlight"/>
+                </xpath>
+                <xpath expr="//button[@name='action_view_invoice']" position="attributes">
+                    <attribute name="attrs">{'invisible':['|', ('invoice_count', '=', 0), ('state', 'in', ('draft','sent','to approve', 'in_progress'))]}</attribute>
+                </xpath>
+
+                <xpath expr="//button[@name='button_done']" position="attributes">
+                    <attribute name="states">purchase,received</attribute>
+                </xpath>
+                <xpath expr="//button[@name='action_create_invoice'][1]" position="attributes">
+                    <attribute name="attrs">{'invisible': ['|', ('state', 'not in', ('purchase', 'done', 'received')), ('invoice_status', 'in', ('no', 'invoiced'))]}</attribute>
+                </xpath>
+                <xpath expr="//button[@name='action_create_invoice'][2]" position="attributes">
+                    <attribute name="attrs">{'invisible': ['|', '|', ('state', 'not in', ('purchase', 'done', 'received')), ('invoice_status', 'not in', ('no', 'invoiced')), ('order_line', '=', [])]}</attribute>
+                </xpath>
+                <field name='payment_term_id' position='attributes'>
+                    <attribute name='domain'>[('order_type', '=', 'purchase')]</attribute>
+                </field>
+                <xpath expr="//label[@for='date_planned']" position="before">
+                    <field name="date_wanted" attrs="{'required': [('state', 'not in', ('draft', 'in_progress', 'cancel'))]}"/>
+                </xpath>
+                <xpath expr="//label[@for='date_planned']" position="attributes">
+                    <attribute name="string">Planned Date</attribute>
+                </xpath>
+                <xpath expr="//field[@name='partner_id']" position="attributes">
+                    <attribute name="domain">[('supplier', '=', True), ('parent_id', '=', False)]</attribute>
+                </xpath>
+                 <xpath expr="//div[hasclass('oe_button_box')]/button[@name='action_view_picking']" position="attributes">
+                    <attribute name="groups">stock.group_stock_user,account.group_account_invoice</attribute>
+                 </xpath>
+
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="is_fully_billed" invisible='1'/>
+                    <field name="pickup_address_id"
+                          domain="['|', ('id', '=', partner_id), ('parent_id','=', partner_id)]"
+                          context="{'default_type': 'invoice', 'show_address': 1, 'tree_view_ref': 'price_paper.view_partner_tree_search_more', 'show_partner_code': 1}"
+                          options="{'no_create': 1, 'no_create_edit': 1, 'always_reload': True}"/>
+                </xpath>
+                <xpath expr="//group[hasclass('oe_subtotal_footer')]" position="before">
+                    <group name="weight_volume">
+                        <field name="total_volume"/>
+                        <field name="total_weight"/>
+                        <field name="total_qty"/>
+                    </group>
+                </xpath>
+                <xpath expr="//field[@name='order_line']" position="before">
+                    <button type="object" name="add_sale_history_to_po_line"
+                            string="Add additional products" icon="fa-history" class="oe_edit_only btn-info"/>
+                </xpath>
+
+                <xpath expr="//field[@name='order_line']/tree/field[@name='price_subtotal']" position="before">
+                    <field name="gross_volume" optional="hide"/>
+                    <field name="gross_weight" optional="hide"/>
+                    <field name="purchase_method" optional="hide"/>
+                </xpath>
+                <xpath expr="//field[@name='order_line']/tree/field[@name='qty_received']" position="attributes">
+                      <attribute name="attrs">{'column_invisible':[('parent.state', 'not in', ('purchase', 'done', 'received'))]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='order_line']/tree/field[@name='qty_invoiced']" position="attributes">
+                    <attribute name="attrs">{'column_invisible':[('parent.state', 'not in', ('purchase', 'done', 'received'))]}</attribute>
+                </xpath>
+                <xpath expr="//field[@name='order_line']/tree/field[@name='product_id']" position="attributes">
+                    <attribute name="widget">product_configurator</attribute>
+                </xpath>
+                <xpath expr="//field[@name='order_line']/tree/field[@name='qty_invoiced']" position="after">
+                    <field name="qty_owed" attrs="{'column_invisible': [('parent.state', 'not in', ('purchase', 'done', 'received'))], 'readonly': [('qty_received_method', '!=', 'manual')]}" optional="show"/>
+                </xpath>
+
+                <xpath expr="//field[@name='order_line']/tree/field[@name='product_qty']" position="before">
+                    <button name="show_sales_history" type="object" icon="fa-history" string="Show sales history"/>
+                </xpath>
+                <xpath expr="//field[@name='order_line']/tree/field[@name='price_subtotal']" position="after">
+                    <button name="update_unit_price" type="object" icon="fa-pencil-square-o" help="Update Unit Price" groups="purchase_extension.group_fifo_price_adjust"/>
+                </xpath>
+                <xpath expr="//notebook" position="after">
+                    <separator/>
+                    <field name="purchase_default_message"/>
+                </xpath>
+                <xpath expr="//field[@name='requisition_id']" position="after">
+                    <field name="vendor_delay"/>
+                    <field name="vendor_order_freq"/>
+                </xpath>
+
+
+            </field>
+        </record>
+
+        <record id="purchase.purchase_rfq" model="ir.actions.act_window">
+            <field name="context">{'search_default_my_purchases':1, 'search_default_draft':1, 'search_default_in_progress':1}</field>
+        </record>
+
+        <record id="res_config_settings_view_form_purchase" model="ir.ui.view">
+            <field name="name">res.config.settings.view.form.purchase.inherit.purchase.extension</field>
+            <field name="model">res.config.settings</field>
+            <field name="inherit_id" ref="purchase.res_config_settings_view_form_purchase"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[@data-string='Purchase']/div[3]" position="after">
+                    <h2>Supplier Info</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box"
+                             title="Number of Months used to calculate supplier end date, these values are automatically updated to system parameters.">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                                <label for="supplier_month_increment"/>
+                                <div class="text-muted">
+                                    Number of months used to calculate supplier end date.
+                                </div>
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <field name="supplier_month_increment" placeholder="Number of months used to calculate End Date"
+                                               style="width:300px;margin-left:10px;"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+        <record id="action_make_fully_billed" model="ir.actions.server">
+            <field name="name">Mark as fully billed</field>
+            <field name="model_id" ref="purchase.model_purchase_order"/>
+            <field name="binding_model_id" ref="purchase.model_purchase_order"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = records.po_fully_billed()
+            </field>
+        </record>
+        <record id="action_mark_po_locked" model="ir.actions.server">
+            <field name="name">Mark PO as Locked</field>
+            <field name="model_id" ref="purchase.model_purchase_order"/>
+            <field name="binding_model_id" ref="purchase.model_purchase_order"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = records.action_mark_po_locked()
+            </field>
+        </record>
+    </data>
+</odoo>

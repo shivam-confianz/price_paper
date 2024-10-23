@@ -1,0 +1,42 @@
+<odoo>
+    <data>
+        <record id="fax_template_edi_sale" model="mail.template">
+            <field name="name">Sales Order: Send by Fax</field>
+            <field name="model_id" ref="price_paper.model_sale_order"/>
+            <field name="email_from">{{ (object.user_id.email_formatted or user.email_formatted)}}</field>
+            <field name="email_to">{{ ctx.get('email_to') }}</field>
+            <field name="subject">{{ object.company_id.name }} {{ object.state in ('draft', 'sent') and (ctx.get('proforma') and 'Proforma' or 'Quotation') or 'Order' }} (Ref {{ object.name or 'n/a' }})</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        <t t-set="doc_name" t-value="'quotation' if object.state in ('draft', 'sent') else 'order'"/>
+                        Dear <t t-out="object.partner_id.name or ''"/>,
+                        <t t-if="object.partner_id.parent_id">
+                            (<t t-out="object.partner_id.parent_id.name or ''"/>)
+                        </t>
+                        <br /><br />
+                        Here is
+                        <t t-if="ctx.get('proforma')">
+                            in attachment your pro-forma invoice
+                        </t>
+                        <t t-else="">
+                            the <t t-out="doc_name or ''"/> <strong t-out="object.name or ''"/>
+                        </t>
+                        <t t-if="object.origin">
+                            (with reference: <t t-out="object.origin or ''"/> )
+                        </t>
+                        amounting in <strong t-out="format_amount(object.amount_total, object.currency_id) or ''"/>
+                        from <t t-out="object.company_id.name or ''"/>.
+                        <br /><br />
+                        Do not hesitate to contact us if you have any question.
+                    </p>
+                </div>
+            </field>
+            <field name="report_template" ref="sale.action_report_saleorder"/>
+            <field name="report_name">{{ (object.name or '').replace('/','-') }}</field>
+            <field name="lang">${object.partner_id.lang}</field>
+<!--            <field name="user_signature" eval="False"/>-->
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

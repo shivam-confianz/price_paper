@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="paperformat_deviated_cost" model="report.paperformat">
+            <field name="name">Deviated_cost</field>
+            <field name="default" eval="True"/>
+            <field name="format">A4</field>
+            <field name="page_height">0</field>
+            <field name="page_width">0</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">50</field>
+            <field name="margin_bottom">15</field>
+            <field name="margin_left">7</field>
+            <field name="margin_right">7</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">50</field>
+            <field name="dpi">90</field>
+        </record>
+
+        <record id="report_deviated_cost_sale" model="ir.actions.report">
+            <field name="name">Deviated Cost Report</field>
+            <field name="model">account.move</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">deviated_cost_sale_report.deviated_cost_report</field>
+            <field name="report_file">deviated_cost_sale_report.deviated_cost_report</field>
+            <field name="print_report_name">'Deviated Cost Report- %s' % (object.name)</field>
+            <field name="paperformat_id" ref="paperformat_deviated_cost"/>
+
+        </record>
+
+    </data>
+</odoo>

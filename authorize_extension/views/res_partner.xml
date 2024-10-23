@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="res_partner_payment_tokenize_view" model="ir.ui.view">
+        <field name="name">res.partner.view.buttons</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="accounting_extension.view_partner_form_inherit"/>
+        <field name="arch" type="xml">
+            <field name="payment_token_ids" position="before">
+                <button class="btn-warning" type="object" name="create_new_token" icon="fa-card" string="Generate New Token"/>
+            </field>
+            <xpath expr="//field[@name='payment_token_ids']/tree/field[@name='name']" position="after">
+                    <field name="shipping_id"/>
+                    <field name="address_id"/>
+                    <field name="card_type" readonly="1"/>
+                    <field name="is_default" widget="boolean_toggle"/>
+            </xpath>
+            <xpath expr="//field[@name='payment_token_ids']/form/sheet/group/field[@name='name']" position="after">
+                    <field name="shipping_id" domain="[('type', '=', 'delivery'), ('parent_id', '=', partner_id)]"/>
+                    <field name="address_id" domain="[('parent_id', '=', partner_id)]"/>
+                    <field name="card_type" readonly="1"/>
+                    <field name="is_default" widget="boolean_toggle"/>
+            </xpath>
+            <xpath expr="//field[@name='property_payment_term_id']" position="after">
+                  <field name="property_card_fee" />
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="view_partner_form_inherit_authorize_extension" model="ir.ui.view">
+        <field name="name">res.partner.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='child_ids']/form/sheet" position="inside">
+                <notebook>
+                    <page string="Payment Tokens" groups="account.group_account_invoice">
+                        <field name="shipping_payment_token_ids" readonly="1">
+                            <tree string="Payment Tokens" default_order="sequence">
+                                <field name="sequence" widget="handle"/>
+                                <field name="name"/>
+                                <field name="acquirer_id" readonly="1"/>
+                                <field name="card_type" readonly="1"/>
+                                <field name="is_default" widget="boolean_toggle"/>
+                                <field name="acquirer_ref" string="Authorize.Net Payment Profile" readonly="1"/>
+                                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

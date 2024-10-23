@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+            <template id="report_ppt_batch_invoice">
+                    <t t-call="web.html_container">
+                        <t t-foreach="docs.mapped('picking_ids').sorted(key=lambda p: p.sequence).mapped('invoice_ids').filtered(lambda r: r.state != 'cancel')"
+                           t-as="o">
+                            <t t-set="company" t-value="o.company_id.sudo()"/>
+                            <t t-set="batch_quicksale" t-value="True"/>
+                            <t t-foreach="range(2)" t-as="iv">
+                                <t t-call="batch_delivery.ppt_custom_invoice_template" t-lang="lang"/>
+                            </t>
+                        </t>
+                    </t>
+            </template>
+
+            <template id="report_ppt_selected_invoice">
+                <t t-call="web.html_container">
+                    <t t-foreach="docs" t-as="o">
+                        <t t-set="company" t-value="o.company_id.sudo()"/>
+                        <t t-set="batch_quicksale" t-value="True"/>
+                         <t t-set="lang" t-value="o.user_id.sudo().lang if o.move_type in ('in_invoice', 'in_refund') else o.partner_id.lang"/>
+                        <t t-foreach="range(2)" t-as="iv">
+                            <t t-call="batch_delivery.ppt_custom_invoice_template" t-lang="lang"/>
+                        </t>
+                    </t>
+                </t>
+        </template>
+
+
+         <template id="report_ppt_selected_invoice_standard">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-set="company" t-value="o.company_id.sudo()"/>
+                     <t t-set="lang" t-value="o.user_id.sudo().lang if o.move_type in ('in_invoice', 'in_refund') else o.partner_id.lang"/>
+                    <t t-foreach="range(2)" t-as="iv">
+                        <t t-call="batch_delivery.ppt_custom_invoice_template" t-lang="lang"/>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+        <template id="report_ppt_selected_invoice_with_payment">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-set="company" t-value="o.company_id.sudo()"/>
+                    <t t-set="print_with_payments" t-value="True"/>
+                    <t t-set="lang" t-value="o.user_id.sudo().lang if o.move_type in ('in_invoice', 'in_refund') else o.partner_id.lang"/>
+                    <t t-foreach="range(2)" t-as="iv">
+                         <t t-call="batch_delivery.ppt_custom_invoice_template" t-lang="lang"/>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+        <template id="mail_report_ppt_selected_invoice_with_payment">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-set="company" t-value="o.company_id.sudo()"/>
+                    <t t-set="print_with_payments" t-value="True"/>
+                    <t t-set="lang" t-value="o.user_id.sudo().lang if o.move_type in ('in_invoice', 'in_refund') else o.partner_id.lang"/>
+                    <t t-foreach="range(1)" t-as="iv">
+                         <t t-call="batch_delivery.ppt_custom_invoice_template" t-lang="lang"/>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+
+
+
+        <template id="report_ppt_selected_invoice_with_payment_quick_sale">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-set="company" t-value="o.company_id.sudo()"/>
+                    <t t-set="batch_quicksale" t-value="True"/>
+                    <t t-set="lang" t-value="o.user_id.sudo().lang if o.move_type in ('in_invoice', 'in_refund') else o.partner_id.lang"/>
+                    <t t-foreach="range(2)" t-as="iv">
+                         <t t-call="batch_delivery.ppt_custom_invoice_template" t-lang="lang"/>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+         <template id="report_batch_picking_active">
+            <t t-set="pickings" t-value="docs"/>
+            <t t-set="batch" t-value="docs.mapped('batch_id')"/>
+            <t t-call="batch_delivery.report_picking_batch123"/>
+        </template>
+
+        <template id="report_batch_picking_all">
+            <t t-foreach="docs" t-as="batch_doc">
+                <t t-set="batch" t-value="batch_doc"/>
+                <t t-set="pickings" t-value="batch_doc.mapped('picking_ids').sorted(key=lambda p: p.sequence, reverse=True)"/>
+                <t t-call="batch_delivery.report_picking_batch123"/>
+            </t>
+        </template>
+
+        <template id="report_product_label">
+          <t t-set="pickinglist" t-value="get_product_labels(docs)"/>
+          <t t-foreach="pickinglist" t-as="picking">
+              <t t-foreach="picking" t-as="location">
+                  <t t-foreach="location[1]" t-as="line">
+                    <t t-call="batch_delivery.product_labels_template"/>
+                </t>
+            </t>
+          </t>
+        </template>
+
+          <template id="report_batch_product_label">
+            <t t-set="pickinglist" t-value="get_product_labels(docs)"/>
+            <t t-foreach="pickinglist" t-as="picking">
+                <t t-foreach="picking" t-as="location">
+                    <t t-foreach="location[1]" t-as="line">
+                    <t t-call="batch_delivery.product_labels_template"/>
+                </t>
+            </t>
+            </t>
+        </template>
+    </data>
+</odoo>

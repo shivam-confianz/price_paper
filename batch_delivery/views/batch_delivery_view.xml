@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_picking_tree_batch_inherit" model="ir.ui.view">
+            <field name="name">stock.picking.batch.tree.inherrit</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock_picking_batch.view_picking_tree_batch"/>
+            <field name="arch" type="xml">
+                <field name="name" position="after">
+                    <field name="sequence" optional="show" widget="handle"/>
+                    <field name="line_no" optional="show" readonly="1"/>
+                    <field name="company_id" invisible="1"/>
+                    <field name="invoice_ref" readonly="1" optional="show"/>
+                    <field name="partner_id" readonly="1" optional="hide"/>
+                    <field name="city" readonly="1" optional="hide"/>
+                    <field name="show_check_availability" invisible="1"/>
+                </field>
+                <xpath expr="//tree" position="attributes">
+                    <attribute name="default_order">sequence</attribute>
+                    <attribute name="create">0</attribute>
+                    <attribute name="edit">1</attribute>
+                    <attribute name="delete">false</attribute>
+                    <attribute name="editable">bottom</attribute>
+                    <attribute name="decoration-danger">low_qty_alert</attribute>
+                    <attribute name="decoration-danger">is_late_order==True</attribute>
+                    <attribute name="decoration-bf">is_late_order==True</attribute>
+                    <attribute name="decoration-it">is_late_order==True</attribute>
+
+                </xpath>
+                <xpath expr="//field[@name='scheduled_date']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+                <xpath expr="//field[@name='location_id']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+                <xpath expr="//field[@name='origin']" position="attributes">
+                    <attribute name="optional">show</attribute>
+                </xpath>
+                <xpath expr="//field[@name='state']" position="attributes">
+                    <attribute name="optional">show</attribute>
+                </xpath>
+                <xpath expr="//field[@name='origin']" position="after">
+                    <field name="release_date" readonly="True" optional="hide"/>
+                    <field name="deliver_by" readonly="True" optional="hide"/>
+                </xpath>
+                <xpath expr="//field[@name='backorder_id']" position="attributes">
+                    <attribute name="readonly">True</attribute>
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+                <xpath expr="//field[@name='origin']" position="attributes">
+                    <attribute name="readonly">True</attribute>
+                </xpath>
+                <xpath expr="//field[@name='scheduled_date']" position="attributes">
+                    <attribute name="readonly">True</attribute>
+                </xpath>
+                <xpath expr="//field[@name='name']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+                <xpath expr="//field[@name='scheduled_date']" position="after">
+                    <field name="is_late_order" attrs="{'readonly':[('parent.state','in', ('done'))]}" widget="boolean_toggle"/>
+                    <field name="is_invoiced" invisible="1"/>
+                    <button class="fa fa-file-text mr8" name="action_print_invoice" type="object" aria-label="Invoice"/>
+                    <button class="fa fa-truck" name="action_print_pick_ticket" type="object" aria-label="Pick Ticket"/>
+                    <button class="fa fa-th-list" name="action_print_product_label" type="object"
+                            aria-label="Product Label"/>
+                    <field name="low_qty_alert" invisible="1"/>
+                </xpath>
+
+                <xpath expr="//field[@name='state']" position="after">
+                    <button class="fa fa-times" name="action_remove" type="object" aria-label="Remove row"
+                            attrs="{'invisible': [('parent.state', 'in', ('in_progress', 'done', 'no_payment', 'paid'))]}"
+                            confirm="Are you sure want to remove this DO from batch"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_picking_form_inherited_pricepaper" model="ir.ui.view">
+            <field name="name">stock_picking_batch.picking.form</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock_picking_batch.view_picking_form_inherited"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='state']" position="before">
+                    <button name="action_assign_transit" type="object"
+                        string="check availability" class="oe_highlight"
+                        attrs="{'invisible': ['|', '|',  ('state', 'in', ['done', 'cancel', 'in_transit', 'transit_confirmed']),
+                        ('picking_type_code', 'in', ['incoming', 'internal']),
+                        '&amp;',('picking_type_code', '=', 'outgoing'),
+                        ('purchase_id', '!=', False)]}"/>
+                    <button name="create_invoice" type="object" string="Create Invoice" groups="account.group_account_invoice" class="oe_highlight"
+                         attrs="{'invisible': ['|', ('state', 'not in', ['in_transit', 'transit_confirmed']), ('is_invoiced', '=', True)]}" />
+                    <button name="action_transit_adjustment" type="object" string="Confirm Transit"
+                        attrs="{'invisible': [('state', 'not in', ('in_transit'))]}"
+                        class="oe_highlight" />
+                    <button name="action_transit_adjustment" type="object" string="Adjust Transit"
+                        attrs="{'invisible': [('state', 'not in', ('transit_confirmed'))]}" />
+                </xpath>
+                <xpath expr="//field[@name='carrier_id']" position="after">
+                    <field name="delivery_notes"/>
+                </xpath>
+            </field>
+        </record>
+
+
+        <record id="batch_picking_form_inherit" model="ir.ui.view">
+            <field name="name">stock.picking.batch.form.inherrit</field>
+            <field name="model">stock.picking.batch</field>
+            <field name="inherit_id" ref="stock_picking_batch.stock_picking_batch_form"/>
+            <field name="arch" type="xml">
+              <button name="action_print" position="replace">
+              </button>
+                <button name="action_confirm" position="before">
+                    <button name="view_pending_products"
+                            string="Pending Products" type="object" class="oe_highlight"
+                            attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                    <!--                    <xpath expr="//button[@name='print_picking']" position="move"/>TODO migrate me-->
+                    <button name="print_master_pickticket" string="Print Master PickTicket"
+                            type="object" class="oe_highlight" attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                    <button name="print_master_late_order_pickticket" string="Print Master Late Order PickTicket"
+                            type="object" class="oe_highlight"
+                            attrs="{'invisible': ['|', ('have_late_order', '=', False), ('state', '=', 'done')]}"/>
+                    <button name="action_print" string="Print Pick Tickets" type="object"
+                        class="oe_highlight"
+                        attrs="{'invisible': [('state', '!=', 'in_truck')]}"/>
+                    <button name="print_product_labels" string="Print Product Labels" type="object"
+                            class="oe_highlight"
+                            attrs="{'invisible': [('state', '!=', 'in_truck')]}"/>
+                </button>
+
+                <button name="action_confirm" position="after">
+
+                    <button name="create_batch_invoice" string="Create Invoice(s)"
+                            type="object" class="oe_highlight"
+                            attrs="{'invisible': ['|', ('state', 'not in', ['in_progress']), ('to_invoice', '=', False)]}"/>
+                    <field name="invoice_ids" invisible="1"/>
+                    <button name="print_invoice_report"
+                            string="Print Invoices" type="object"
+                            class="oe_highlight"
+                            attrs="{'invisible': ['|', ('invoice_ids', '=', []), ('state', 'not in', ['in_progress', 'done'])]}"/>
+                    <button name="print_driver_spreadsheet" string="Print Drivers Document" type="object"
+                            class="oe_highlight"
+                            attrs="{'invisible': ['|', ('invoice_ids', '=', []), ('state', 'not in', ['in_progress', 'done'])]}"/>
+                    <button name="set_in_truck" string="Move to In Progress"
+                            type="object" class="oe_highlight"
+                            states='draft'/>
+                    <button name="set_to_draft" string="Move to Draft"
+                            type="object"
+                            states='in_truck'/>
+                    <button name="action_transit_adjustment" type="object" string="Confirm Transit"
+                        attrs="{'invisible': [('state', 'not in', ('in_progress'))]}"
+                        class="oe_highlight"
+                        groups="stock.group_stock_user"/>
+                </button>
+                <button name="action_open_label_layout" position="attributes">
+                    <attribute name="attrs">{'invisible': 1}</attribute>
+                </button>
+                <!-- <button name="action_assign" position="attributes">
+                    <attribute name="attrs">{'invisible': 1}</attribute>
+                </button> -->
+                <xpath expr="//button[@name='action_assign'][1]" position="attributes">
+                  <attribute name="attrs">{'invisible': 1}</attribute>
+                </xpath>
+                <xpath expr="//button[@name='action_assign'][2]" position="attributes">
+                  <attribute name="attrs">{'invisible': 1}</attribute>
+                </xpath>
+                <button name="action_set_quantities_to_reservation" position="attributes">
+                    <attribute name="attrs">{'invisible': 1}</attribute>
+                </button>
+                <button name="action_confirm" position="attributes">
+                    <attribute name="states">in_truck</attribute>
+                </button>
+                <button name="action_cancel" position="attributes">
+                    <attribute name="confirm">Are you sure want to cancel the batch?</attribute>
+                    <attribute name="states">draft</attribute>
+                </button>
+                <xpath expr="//button[@name='action_done'][1]" position="attributes">
+                  <attribute name="attrs">{'invisible': ['|', ('invoice_ids', '=', []), '|',
+                    ('state', '!=', 'in_progress'), ('show_check_availability', '=', True)]}</attribute>
+                </xpath>
+                <xpath expr="//button[@name='action_done'][2]" position="attributes">
+                    <attribute name="attrs">{'invisible': ['|', ('invoice_ids', '=', []),
+                      '|', ('state', '!=', 'in_progress'),
+                      ('show_check_availability', '=', False)]}</attribute>
+                </xpath>
+                <xpath expr="//notebook/page[1]" position="before">
+                    <xpath expr="//notebook/page[3]" position="move"/>
+                </xpath>
+
+
+
+                <field name="company_id" position="after">
+                    <field name="route_id"/>
+                    <field name="truck_driver_id"
+                           domain="[('is_driver', '=', True), ('is_driver_available', '=', True)]"
+                           attrs="{'readonly':[('state', 'in', ['in_progress', 'done', 'cancel'])]}"
+                           context="{'default_is_driver': True}"/>
+                </field>
+
+                <field name="scheduled_date" position="replace">
+                    <field name="date"/>
+                    <field name="total_amount" groups="sales_team.group_sale_manager"/>
+                    <field name="total_profit" groups="sales_team.group_sale_manager"/>
+                    <field name="profit_percentage" groups="sales_team.group_sale_manager"/>
+                    <field name="total_unit"/>
+                    <field name="total_volume"/>
+                    <field name="total_weight"/>
+                </field>
+
+                <field name="user_id" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
+
+                <xpath expr="//div[1]" position="before">
+                    <field name="to_invoice" invisible="1"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button"
+                                name="view_invoices"
+                                icon="fa-pencil-square-o"
+                                attrs="{'invisible': [('invoice_ids', '=', [])]}"
+                                type="object"
+                                string="Customer Invoices"/>
+                        <button class="oe_stat_button"
+                                name="view_payments"
+                                icon="fa-pencil-square-o"
+                                attrs="{'invisible': [('payment_ids', '=', [])]}"
+                                type="object"
+                                string="Customer Payments"/>
+                        <button class="oe_stat_button"
+                                name="view_location_map"
+                                icon="fa-globe"
+                                type="object"
+                                string="View Route Map"/>
+                    </div>
+                </xpath>
+
+                <xpath expr="//field[@name='picking_ids']" position="attributes">
+                   <attribute name="widget">one2many</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='picking_ids']" position="attributes">
+                    <attribute name="attrs">{'readonly': [('state', 'in', ('done'))]}</attribute>
+                </xpath>
+
+
+                <field name="picking_ids" position="after">
+                    <div attrs="{'invisible':[('state', '!=', 'done')]}">
+                        <separator string="Cash Collected Breakup"/>
+                        <group col="4">
+                            <field name="actual_returned" attrs="{'readonly':[('is_posted', '=', True)]}"/>
+                            <field name="pending_amount"/>
+                        </group>
+
+                        <field name="cash_collected_lines" attrs="{'readonly': 1}">
+                            <tree editable="bottom">
+                                <field name="sequence" widget="handle"/>
+                                <field name="partner_id" domain="[('customer', '=', True)]"/>
+                                <field name="communication"/>
+                                <field name="amount"/>
+                            </tree>
+                        </field>
+                    </div>
+
+                    <field name="is_posted" invisible="1"/>
+                    <field name="have_late_order" invisible="1"/>
+                    <field name="payment_ids" invisible="1"/>
+
+                </field>
+
+            </field>
+        </record>
+
+        <record id="batch_picking_tree_inherrit" model="ir.ui.view">
+            <field name="name">stock.picking.batch.tree.inherrit</field>
+            <field name="model">stock.picking.batch</field>
+            <field name="inherit_id" ref="stock_picking_batch.stock_picking_batch_tree"/>
+            <field name="arch" type="xml">
+                <field name="name" position="after">
+                    <field name="date"/>
+                    <field name="route_id"/>
+                    <field name="truck_driver_id"/>
+                    <field name="total_amount" groups="sales_team.group_sale_manager"/>
+                    <field name="total_profit" groups="sales_team.group_sale_manager"/>
+                    <field name="profit_percentage" groups="sales_team.group_sale_manager"/>
+                </field>
+                <field name="user_id" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
+            </field>
+        </record>
+
+        <record id="batch_picking_search_inherrit" model="ir.ui.view">
+            <field name="name">stock.picking.batch.search.inherrit</field>
+            <field name="model">stock.picking.batch</field>
+            <field name="inherit_id" ref="stock_picking_batch.stock_picking_batch_filter"/>
+            <field name="arch" type="xml">
+
+                <filter name="in_progress" position="attributes">
+                    <attribute name="domain">[('state', 'in', ['draft', 'in_progress', 'in_truck'])]</attribute>
+                </filter>
+                <filter name="in_progress" position="after">
+                    <filter name="not_paid" string="Draft Payment" domain="[('state', '=', 'done')]"
+                            help="Batch Payment in Draft state"/>
+                </filter>
+            </field>
+        </record>
+
+        <record id="stock_picking_batch_view_form" model="ir.ui.view">
+            <field name="name">stock.picking.batch.payment.view.form</field>
+            <field name="model">stock.picking.batch</field>
+            <field name="arch" type="xml">
+                <form string="Stock Batch Picking">
+                    <header>
+                        <button name="register_payments"
+                                confirm="All payments will be posted and this action can't be undone are you sure you want to proceed?"
+                                string="Register Payments" type="object" class="oe_highlight"
+                                attrs="{'invisible': [('state', 'in', ('no_payment', 'paid'))]}"
+                        />
+                        <button name="action_no_payment"
+                                string="No Payment" type="object" class="oe_highlight"
+                                attrs="{'invisible': [('state', '!=', 'done')]}"
+                        />
+                        <button name="action_to_shipping_done"
+                                string="Add Payment" type="object" class="oe_highlight"
+                                attrs="{'invisible': [('state', '!=', 'no_payment')]}"
+                        />
+                        <field name="state" widget="statusbar" statusbar_visible="done,no_payment,paid,cancel"/>
+                    </header>
+                    <field name="show_warning" invisible="1"/>
+                    <field name="allowed_picking_ids" invisible="1"/>
+                    <div class="alert alert-warning" role="alert" style="margin-bottom:0px;"
+                         attrs="{'invisible': [('show_warning','=',False)]}">
+                        <bold>Customers who did not render payment must be deleted before being able to post payments.
+                        </bold>
+                    </div>
+                    <sheet>
+
+                        <div class="oe_button_box" name="button_box">
+
+                            <button class="oe_stat_button"
+                                    name="view_invoices"
+                                    icon="fa-pencil-square-o"
+                                    type="object"
+                                    attrs="{'invisible': [('state', 'in', ['draft', 'in_progress', 'no_payment', 'in_truck'])]}"
+                                    string="Customer Invoices"/>
+
+                            <button name="view_batch_payments"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    icon="fa-pencil-square-o"
+                                    attrs="{'invisible': [('payment_ids', '=', [])]}">
+                                <field name="batch_payment_count" widget="statinfo" string="Batch Payments"/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" class="oe_inline" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="truck_driver_id" readonly="1"/>
+                                <field name="actual_returned"
+                                       attrs="{'readonly':[('state', 'in', ('no_payment', 'paid'))]}"/>
+                                <field name="pending_amount"/>
+                            </group>
+                            <group>
+                                <field name="cash_amount"
+                                       attrs="{'readonly':[('state', 'in', ('no_payment', 'paid'))]}"/>
+                                <field name="cheque_amount"
+                                       attrs="{'readonly':[('state', 'in', ('no_payment', 'paid'))]}"/>
+                            </group>
+                        </group>
+                        <separator string="Cash Collected Lines"/>
+                        <field name="picking_ids" invisible="1"/>
+                        <field name="payment_ids" invisible="1"/>
+                        <field name="is_posted" invisible="1"/>
+                        <field name="cash_collected_lines"
+                               attrs="{'readonly': [('state', 'in', ('no_payment', 'paid'))]}"
+                               context="{'default_batch_id': active_id}">
+                            <tree editable="bottom">
+                                <field name="sequence" widget="handle"/>
+                                <field name="batch_id" invisible="1"/>
+                                <field name="billable_partner_ids" widget="many2many_tags" invisible="1"/>
+                                <field name="partner_id" domain="[('id', 'in', billable_partner_ids)]"/>
+                                <field name="partner_ids" invisible="1"/>
+                                <field name="invoice_id"
+                                       domain="[('partner_id', 'in', partner_ids), ('state', '=', 'posted'), ('payment_state', 'not in', ('paid', 'in_payment')), ('move_type', '=', 'out_invoice')]"
+                                       context="{'from_batch_payment': True}"/>
+                                <field name="journal_id" required="1"/>
+                                <field name="available_payment_method_line_ids" invisible="1"/>
+                                <field name="payment_method_line_id" domain="[('id','in',available_payment_method_line_ids)]"
+                                       required="1"/>
+                                <field name="discount"/>
+                                <field name="communication" attrs="{'required': [('is_communication', '=', True)]}"/>
+                                <field name="is_communication" invisible="1"/>
+                                <field name="amount" sum="Total"/>
+                            </tree>
+                            <form>
+                                <group>
+                                    <group>
+                                        <field name="partner_id"/>
+                                        <field name="journal_id"/>
+                                        <field name="available_payment_method_line_ids" invisible="1"/>
+                                        <field name="payment_method_line_id"
+                                               domain="[('id','in',available_payment_method_line_ids)]" required="1"/>
+                                        <field name="communication"/>
+                                    </group>
+                                    <group>
+                                        <field name="invoice_id"/>
+                                        <field name="amount"/>
+                                        <field name="discount"/>
+                                    </group>
+                                </group>
+                            </form>
+                        </field>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="stock_picking_batch_payment_action" model="ir.actions.act_window">
+            <field name="name">Truck Delivery Payments</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">stock.picking.batch</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('state', 'in', ('done', 'paid'))]</field>
+            <field name="context">{'create': False, 'search_default_not_paid' : True, 'delete': False}</field>
+            <!--           <field name="help" type="html">
+                           <p class="o_view_nocontent_smiling_face">
+                               The goal of the batch picking is to group operations that may
+                               (needs to) be done together in order to increase their efficiency.
+                               It may also be useful to assign jobs (one person = one batch) or
+                               help the timing management of operations (tasks to be done at 1pm).
+                           </p>
+                       </field>-->
+        </record>
+
+        <record id="stock_picking_batch_payment_tree" model="ir.actions.act_window.view">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="batch_delivery.batch_picking_tree_inherrit"/>
+            <field name="act_window_id" ref="stock_picking_batch_payment_action"/>
+        </record>
+
+        <record id="stock_picking_batch_payment_form" model="ir.actions.act_window.view">
+            <field name="sequence" eval="2"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="stock_picking_batch_view_form"/>
+            <field name="act_window_id" ref="stock_picking_batch_payment_action"/>
+        </record>
+
+        <menuitem action="stock_picking_batch_payment_action" id="stock_picking_batch_payment_menu"
+                  parent="account.menu_finance_receivables" sequence="30"/>
+
+    </data>
+</odoo>

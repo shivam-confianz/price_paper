@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_company_inherit_purge_old_open_credits" model="ir.ui.view">
+        <field name="name">res.company.inherit.purge.old.open.credits</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="price_paper.res_company_inherit_price_paper"/>
+        <field name="arch" type="xml">
+            <field name="burden_percent" position="after">
+                <label for="purge_old_open_credit_limit" class="mt-5"/>
+                <div class="mt-5">
+                    <field name="purge_old_open_credit_limit" class="oe_inline" style="width: 50%;"/>
+                    days
+                </div>
+            </field>
+        </field>
+    </record>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.purchase.inherit.accounting.extension</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@data-key='account']/div[4]" position="inside">
+                <div class="col-lg-6 o_setting_box" id="credit_purge">
+                    <div class="o_setting_left_pane"/>
+                    <div class="o_setting_right_pane">
+                        <span class="o_form_label">Old Open Credit Purge</span>
+                        <div class="text-muted">
+                            Credit Purge Account.
+                        </div>
+                        <div class="content-group mt16">
+                            <field name="credit_purge_account" class="text-center oe_inline"/>
+                        </div>
+                        <div class="text-muted">
+                            Credit Active Days.
+                        </div>
+                        <div class="content-group mt16">
+                            <field name="purge_old_credit_day_limit" class="text-center oe_inline"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 o_setting_box" id="payment_purge">
+                    <div class="o_setting_left_pane"/>
+                    <div class="o_setting_right_pane">
+                        <span class="o_form_label">Old Payment Purge</span>
+                        <div class="text-muted">
+                            Payment Purge Account.
+                        </div>
+                        <div class="content-group mt16">
+                            <field name="payment_purge_account" class="text-center oe_inline"/>
+                        </div>
+                        <div class="text-muted">
+                            Payment Active Days.
+                        </div>
+                        <div class="content-group mt16">
+                            <field name="purge_old_payment_day_limit" class="text-center oe_inline"/>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

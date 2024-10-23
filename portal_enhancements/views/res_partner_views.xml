@@ -1,0 +1,718 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="open_credit" model="ir.actions.act_window">
+            <field name="name">Credit Application</field>
+            <field name="res_model">partner.credit</field>
+            <field name="view_mode">form</field>
+            <field name="domain">[('partner_id','=',active_id)]</field>
+            <field name="context">{}</field>
+
+        </record>
+        <record id="res_partner_view_form" model="ir.ui.view">
+            <field name="name">res.partner.form.sign.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="groups_id" eval="[(4, ref('sign.group_sign_user'))]"/>
+            <field name="arch" type="xml">
+                <div name="button_box" position="inside">
+                    <button name="open_signatures" type="object" class="oe_stat_button" icon="fa-pencil" attrs="{'invisible': [ ('signature_count', '=', 0)]}">
+                        <div class="o_field_widget o_stat_info">
+                            <span class="o_stat_value">
+                                <field name="signature_count"/>
+                            </span>
+                            <span class="o_stat_text">Signature Requested</span>
+                        </div>
+                    </button>
+                    <field name="partner_credit" invisible='1'/>
+                    <button name='%(open_credit)d' type='action' string='Credit Application' class='oe_stat_button' icon='fa-pencil' attrs="{'invisible':[('partner_credit','=',False)]}"/>
+                </div>
+                <field name='fax_number' position='after'>
+                    <field name="is_verified" string='Customer Onboarding Completed'></field>
+                </field>
+            </field>
+        </record>
+
+
+
+
+
+        <record id="view_partner_pricepaper_vat_form_inherit_price_paper" model="ir.ui.view">
+            <field name="name">res.partner.view.form.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="price_paper.view_partner_pricepaper_vat_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet" position="before">
+                    <header>
+                        <field name="business_verification_status" invisible='1' />
+                        <field name="is_verified" invisible='1' />
+                        <field name="businesss_registration_information" invisible='1'></field>
+                        <button class='btn-primary' name='verify_signatures' type='object' string='Verify Document' attrs="{'invisible': ['|',('business_verification_status', '!=', 'submit'),'|',('is_verified','=',True),('businesss_registration_information','=',False)]}"/>
+
+                    </header>
+
+                </xpath>
+            </field>
+        </record>
+
+        <record id="res_partner_inherit_portal_enhancements" model="ir.ui.view">
+            <field name="name">res.partner.portal.extension</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='vat']" position="after">
+                    <!-- <field name="dba"/> -->
+                    <field name="year_established"/>
+                    <field name="established_state"/>
+                    <field name="resale_taxexempt"/>
+                    <field name="typeofbusiness"/>
+                </xpath>
+                <notebook position="inside">
+                    <page string="Portal Users" attrs="{'invisible': [('is_company', '=', False)]}">
+                        <field name="portal_partner_ids" domain="[('portal_access_level', '!=', False)]" readonly="1">
+                            <tree editable="bottom" create="0">
+                                <field name="name"/>
+                                <field name="phone"/>
+                                <field name="email"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+            </field>
+        </record>
+
+        <!--                    Portal user views-->
+        <record id="view_partner_tree_portal_enhancements" model="ir.ui.view">
+            <field name="name">res.partner.tree.portal.enhancements</field>
+            <field name="model">res.partner</field>
+            <field eval="100" name="priority"/>
+            <field name="arch" type="xml">
+                <tree string="Contacts" sample="1" multi_edit="1">
+                    <field name="display_name" string="Name"/>
+                    <field name="function" invisible="1"/>
+                    <field name="phone" class="o_force_ltr" optional="show"/>
+                    <field name="email" optional="show"/>
+                    <field name="city" optional="show"/>
+                    <field name="state_id" optional="hide" readonly="1"/>
+                    <field name="country_id" optional="show" readonly="1"/>
+                    <field name="vat" optional="hide" readonly="1"/>
+                    <field name="category_id" optional="hide" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                    <field name="company_id" groups="base.group_multi_company" readonly="1"/>
+                    <field name="is_company" invisible="1"/>
+                    <field name="parent_id" invisible="1" readonly="1"/>
+                    <field name="active" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+
+        <record id="view_partner_form_portal_enhancements" model="ir.ui.view">
+            <field name="name">res.partner.form.portal.enhancements</field>
+            <field name="model">res.partner</field>
+            <field name="priority" eval="100"/>
+            <field name="arch" type="xml">
+                <form string="Partners">
+                    <div class="alert alert-warning oe_edit_only" role="alert" attrs="{'invisible': [('same_vat_partner_id', '=', False)]}">
+                  A partner with the same <span>
+                        <span class="o_vat_label">Tax ID</span>
+                    </span> already exists (<field name="same_vat_partner_id"/>
+), are you sure to create a new one?
+                </div>
+                <sheet>
+                    <div class="oe_button_box" name="button_box"/>
+                    <widget name="web_ribbon" title="Granted" bg_color="bg-success" attrs="{'invisible': [('has_portal_access', '=', False)]}"/>
+                    <widget name="web_ribbon" title="Revoked" bg_color="bg-warning" attrs="{'invisible': [('has_portal_access', '=', True)]}"/>
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger" attrs="{'invisible': [('active', '=', True)]}"/>
+                    <field name="avatar_128" invisible="1"/>
+                    <field name="image_1920" widget='image' class="oe_avatar" options='{"preview_image": "avatar_128"}'/>
+                    <div class="oe_title mb24">
+                        <field name="is_company" invisible="1"/>
+                        <field name="commercial_partner_id" invisible="1"/>
+                        <field name="active" invisible="1"/>
+                        <field name="country_code" invisible="1"/>
+                        <field name="customer" invisible="1"/>
+                        <h1>
+                            <field id="individual" class="text-break" name="name" default_focus="1" attrs="{'required' : [('type', '=', 'contact'), ('is_company', '=', False)], 'invisible': [('is_company','=', True)], 'readonly': [('is_company', '=', False)]}"/>
+                        </h1>
+                        <div class="oe_edit_only">
+                            <group attrs="{'invisible': [('is_company', '=', True)]}">
+                                <field name="lastname" attrs="{'required': [('firstname', '=', False),
+                                    ('is_company', '=', False),
+                                    ('type', '=', 'contact')]}" />
+                                <field name="firstname" attrs="{'required': [('lastname', '=', False),
+                                    ('is_company', '=', False),
+                                    ('type', '=', 'contact')]}" />
+                            </group>
+                        </div>
+                        <div class="o_row" attrs="{'invisible': [('portal_access_level','=','user')]}">
+                            <span>Related Administrator</span>
+                            <field name="parent_id" string = "Related Administrator" domain="[('portal_access_level','=','user'),('id','!=', context.get('active_id', None))]" placeholder="Portal Administrator Name..." options="{'no_quick_create':True,'no_create_edit':True}"/>
+                        </div>
+                    </div>
+
+                    <group>
+                        <group>
+                            <span class="o_form_label o_td_label" name="address_name">
+                                <field name="type" class="font-weight-bold" readonly="1"/>
+                            </span>
+                            <div class="o_address_format">
+                                <field name="street" placeholder="Street..." class="o_address_street"/>
+                                <field name="street2" placeholder="Street 2..." class="o_address_street"/>
+                                <field name="city" placeholder="City" class="o_address_city"/>
+                                <field name="state_id" class="o_address_state" placeholder="State" options="{'no_open': True, 'no_quick_create': True}" context="{'country_id': country_id, 'default_country_id': country_id, 'zip': zip}"/>
+                                <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+                                <field name="country_id" placeholder="Country" class="o_address_country" options='{"no_open": True, "no_create": True}' attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}"/>
+                            </div>
+                            <field name="vat" placeholder="e.g. BE0477472701" attrs="{'readonly': [('parent_id','!=',False)]}"/>
+                        </group>
+                        <group>
+                            <field name="portal_access_level" attrs="{'invisible': [('is_company', '=', True)]}" required="1"/>
+                            <field name="can_create_orders" attrs="{'invisible': [('is_company', '=', True)]}" />
+                            <field name="has_portal_access" invisible="1"/>
+                            <field name="function" placeholder="e.g. Sales Director" attrs="{'invisible': [('is_company','=', True)]}"/>
+                            <field name="phone" widget="phone"/>
+                            <field name="mobile" widget="phone"/>
+                            <field name="user_ids" invisible="1"/>
+                            <field name="email" widget="email" context="{'gravatar_image': True}" attrs="{'required': [('user_ids','!=', [])]}" required="1"/>
+                            <field name="website" string="Website" widget="url" placeholder="e.g. https://www.odoo.com"/>
+                            <field name="title" options='{"no_open": True}' placeholder="e.g. Mister" attrs="{'invisible': [('is_company', '=', True)]}"/>
+                            <field name="active_lang_count" invisible="1"/>
+                            <label for="lang" attrs="{'invisible': [('active_lang_count', '&lt;=', 1)]}"/>
+                            <div class="o_row" attrs="{'invisible': [('active_lang_count', '&lt;=', 1)]}">
+                                <field name="lang"/>
+                                <button type="action" name="%(base.res_lang_act_window)d" class="btn-sm btn-link mb4 fa fa-globe" aria-label="More languages" groups="base.group_system" title="More languages" />
+                            </div>
+                            <field name="category_id" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}" placeholder="Tags..."/>
+                        </group>
+                    </group>
+                    <notebook colspan="4">
+                        <page string="Accessible Companies" attrs="{'invisible': [('is_company', '=', True)]}" autofocus="autofocus">
+                            <button class="btn btn-primary" name="action_add_companies" string="Add Companies" type="object" attrs="{'invisible': ['|',('portal_access_level', '=', 'user'),('portal_access_level', '=', 'manager'), ('parent_id','=',False)]}"/>
+                            <field name="portal_company_ids" widget="many2many" attrs="{'readonly': [('portal_access_level', '=', 'manager'), ('parent_id','!=',False)]}">
+                                <tree editable="bottom" create="0">
+                                    <field name="name"/>
+                                    <field name="street"/>
+                                    <field name="city"/>
+                                    <field name="city_id" invisible="1"/>
+                                    <field name="type" invisible="1"/>
+                                    <button name="action_add_contacts" string="Configure Contacts" type="object" context="{'origin_id': parent.id, 'origin_model': 'res.partner'}"/>
+                                </tree>
+                            </field>
+
+                        </page>
+
+                        <page string="Accessible Contacts" attrs="{'invisible': [('is_company', '=', True)]}">
+                            <field name="portal_contact_ids" widget="many2many" readonly="1">
+                                <tree decoration-info="company_type == 'company'" decoration-success="company_type == 'person'">
+                                    <field name="name"/>
+                                    <field name="partner_id" invisible="1"/>
+                                    <field name="parent_id"/>
+                                    <field name="phone" string="Phone"/>
+                                    <field name="company_type"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Manage Model Access">
+                            <field name="portal_model_access">
+                                <tree create="0" delete="0" editable="bottom">
+                                    <field name="model_id" invisible="1"/>
+                                    <field name="name" />
+                                    <field name="is_model_accessible" widget="boolean_toggle"/>
+                                </tree>
+                                <form>
+                                    <group>
+                                        <group>
+                                            <field name="model_id"/>
+                                        </group>
+                                        <group>
+                                            <field name="is_model_accessible"/>
+                                        </group>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Assigned Managers" attrs="{'invisible': [('portal_access_level', '!=', 'user')]}">
+
+                            <!--                                <field name="child_ids" mode="kanban" context="{'default_parent_id': active_id, 'default_street': street, 'default_street2': street2, 'default_city': city, 'default_state_id': state_id, 'default_zip': zip, 'default_country_id': country_id, 'default_lang': lang, 'default_user_id': user_id, 'default_type': 'other'}">-->
+                            <field name="child_ids" mode="kanban" context="{'default_parent_id': active_id, 'default_street': street, 'default_street2': street2, 'default_city': city, 'default_state_id': state_id, 'default_zip': zip, 'default_country_id': country_id, 'default_lang': lang,}">
+                                <kanban>
+                                    <field name="id"/>
+                                    <field name="color"/>
+                                    <field name="name"/>
+                                    <field name="title"/>
+                                    <field name="type"/>
+                                    <field name="email"/>
+                                    <field name="parent_id"/>
+                                    <field name="is_company"/>
+                                    <field name="function"/>
+                                    <field name="phone"/>
+                                    <field name="street"/>
+                                    <field name="street2"/>
+                                    <field name="zip"/>
+                                    <field name="city"/>
+                                    <field name="country_id"/>
+                                    <field name="mobile"/>
+                                    <field name="state_id"/>
+                                    <field name="image_128"/>
+                                    <field name="avatar_128"/>
+                                    <field name="lang"/>
+                                    <!-- fields in form x2many view to diminish requests -->
+                                    <field name="comment"/>
+                                    <field name="display_name"/>
+                                    <templates>
+                                        <t t-name="kanban-box">
+                                            <t t-set="color" t-value="kanban_color(record.color.raw_value)"/>
+                                            <div t-att-class="color + (record.title.raw_value == 1 ? ' oe_kanban_color_alert' : '') + ' oe_kanban_global_click'">
+                                                <div class="o_kanban_image">
+                                                    <img alt="Contact image" t-att-src="kanban_image('res.partner', 'avatar_128', record.id.raw_value)"/>
+                                                </div>
+                                                <div class="oe_kanban_details">
+                                                    <field name="name"/>
+                                                    <div t-if="record.portal_access_level.raw_value">
+                                                        <field name="portal_access_level"/>
+                                                    </div>
+                                                    <div t-if="record.function.raw_value">
+                                                        <field name="function"/>
+                                                    </div>
+                                                    <div t-if="record.email.raw_value">
+                                                        <field name="email" widget="email"/>
+                                                    </div>
+                                                    <div t-if="record.type.raw_value != 'contact'">
+                                                        <div>
+                                                            <field name="zip"/>
+                                                            <field name="city"/>
+                                                        </div>
+                                                        <field t-if="record.state_id.raw_value" name="state_id"/>
+                                                        <field name="country_id"/>
+                                                    </div>
+                                                    <div t-if="record.phone.raw_value">Phone: <t t-esc="record.phone.value"/>
+                                                    </div>
+                                                    <div t-if="record.mobile.raw_value">Mobile: <t t-esc="record.mobile.value"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>
+                                <form string="Managers">
+                                    <sheet>
+                                        <field name="type" required="1" widget="radio" options="{'horizontal': true}" invisible="1"/>
+                                        <field name="parent_id" invisible="1"/>
+                                        <hr/>
+                                        <group>
+                                            <group>
+                                                <field name="name" string="Contact Name" attrs="{'required' : [('type', '=', 'contact')]}"/>
+                                                <field name="title" options="{'no_open': True}" placeholder="e.g. Mr." attrs="{'invisible': [('type','!=', 'contact')]}"/>
+                                                <field name="function" placeholder="e.g. Sales Director" attrs="{'invisible': [('type','!=', 'contact')]}"/>
+
+                                            </group>
+                                            <group>
+                                                <field name="portal_access_level"/>
+                                                <field name="email" widget="email"/>
+                                                <field name="phone" widget="phone"/>
+                                                <field name="mobile" widget="phone"/>
+                                                <field name="company_id" invisible="1"/>
+                                            </group>
+                                        </group>
+                                        <group>
+                                            <field name="comment" placeholder="Internal notes..."/>
+                                        </group>
+                                        <field name="lang" invisible="True"/>
+                                        <field name="user_id" invisible="True"/>
+                                    </sheet>
+                                </form>
+
+                            </field>
+                        </page>
+
+                        <page name='internal_notes' string="Internal Notes">
+                            <field name="comment" placeholder="Internal note..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!--        inherit and modify action domain for res.partner-->
+    <record id="contacts.action_contacts" model="ir.actions.act_window">
+        <field name="domain">[('portal_access_level','not in',['manager', 'user'])]</field>
+    </record>
+    <record id="account.res_partner_action_customer" model="ir.actions.act_window">
+        <field name="domain">[('portal_access_level','not in',['manager', 'user'])]</field>
+    </record>
+    <record id="account.res_partner_action_supplier" model="ir.actions.act_window">
+        <field name="domain">[('portal_access_level','not in',['manager', 'user'])]</field>
+    </record>
+
+    <!--                    portal actions-->
+    <record id="action_res_partner_portal_enhancements" model="ir.actions.act_window">
+        <field name="name">Portal Users</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('portal_access_level', '!=', False)]</field>
+        <field name="context">{'default_portal_access_level': 'manager', 'default_customer': True,
+                'default_company_type': 'person', 'default_type': 'contact', }</field>
+    </record>
+
+
+    <record model="ir.actions.act_window.view" id="action_res_partner_portal_enhancements_tree">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_partner_tree_portal_enhancements"/>
+        <field name="act_window_id" ref="action_res_partner_portal_enhancements"/>
+    </record>
+
+    <record model="ir.actions.act_window.view" id="action_res_partner_portal_enhancements_form">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_partner_form_portal_enhancements"/>
+        <field name="act_window_id" ref="action_res_partner_portal_enhancements"/>
+    </record>
+
+    <!--                    portal user menu-->
+    <menuitem id="menu_res_partner_portal_enhancements" name="Portal Users" action="action_res_partner_portal_enhancements" parent="sale.sale_order_menu" groups="sales_team.group_sale_manager" sequence="1000" />
+
+
+    <template id="report_credit_application">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class='text-center'>
+                        Application For Credit Account
+                        </h2>
+                        <br/>
+                        <br/>
+                        <div class='row'>
+                            <div class='col-6'>
+                                <strong>Company: </strong>
+                                <span>
+                                    <t t-esc='doc.company'/>
+                                </span>
+                            </div>
+                            <div class='col-6'>
+                                <strong>Phone: </strong>
+                                <span>
+                                    <t t-esc='doc.phone'/>
+                                </span>
+                            </div>
+                        </div>
+                        <br/>
+                        <div class='row'>
+                            <div class='col-4'>
+                                <strong>FAX: </strong>
+                                <span>
+                                    <t t-esc='doc.fax'/>
+                                </span>
+                            </div>
+
+                            <div class='col-4'>
+                                <strong>Cell: </strong>
+                                <span>
+                                    <t t-esc='doc.phone'/>
+                                </span>
+                            </div>
+
+                            <div class='col-4'>
+                                <strong>Email: </strong>
+                                <span>
+                                    <t t-esc='doc.email'/>
+                                </span>
+                            </div>
+                        </div>
+                        <br/>
+                        <div class='row'>
+                            <div class='col-12'>
+                                <strong>Address:</strong>
+                                <span>
+                                    <t t-esc='doc.address'/>
+                                </span>
+                            </div>
+                        </div>
+                        <br/>
+                        <div class='row'>
+                            <div class='col-4'>
+                                <strong>City: </strong>
+                                <span>
+                                    <t t-esc='doc.city'/>
+                                </span>
+                            </div>
+
+                            <div class='col-4'>
+                                <strong>State: </strong>
+                                <span>
+                                    <t t-esc='doc.state_id.name'/>
+                                </span>
+                            </div>
+
+                            <div class='col-4'>
+                                <strong>Zip: </strong>
+                                <span>
+                                    <t t-esc='doc.zip'/>
+                                </span>
+                            </div>
+                        </div>
+                        <br/>
+                        <strong>List of name(s) and title(s) of corporate officers, partners or owners:</strong>
+                        <br/>
+                        <br/>
+                        <t t-foreach='doc.corporate_partner_ids' t-as='cor'>
+                            <div class='row'>
+                                <div class='col-6'>
+                                    <strong>Name: </strong>
+                                    <span>
+                                        <t t-esc='cor.name'/>
+                                    </span>
+                                </div>
+                                <div class='col-6'>
+                                    <strong>Title: </strong>
+                                    <span>
+                                        <t t-esc='cor.title'/>
+                                    </span>
+                                </div>
+                            </div>
+                        </t>
+                        <strong>Type of business:</strong>
+                        <t t-esc='doc.typeofbusiness'/>
+
+
+                        <div class='row'>
+                            <div class='col-6'>
+                                <strong>Annual Sales Volume: </strong>
+                                <span>
+                                    <t t-esc='doc.annual_sales_volume'/>
+                                </span>
+                            </div>
+                            <div class='col-6'>
+                                <strong>Accounts Payable Contact: </strong>
+                                <span>
+                                    <t t-esc='doc.account_payable_contact'/>
+                                </span>
+                            </div>
+                        </div>
+                        <br/>
+
+
+
+                        <div class='row'>
+                            <div class='col-4'>
+                                <strong>Year Established: </strong>
+                                <span>
+                                    <t t-esc='doc.year_established'/>
+                                </span>
+                            </div>
+
+                            <div class='col-4'>
+                                <strong>Num. Od Employees: </strong>
+                                <span>
+                                    <t t-esc='doc.no_emp'/>
+                                </span>
+                            </div>
+
+                            <div class='col-4'>
+                                <strong>Time at present location: </strong>
+                                <span>
+                                    <t t-esc='doc.time_present_location'/>
+                                </span>
+                            </div>
+                        </div>
+                        <br/>
+
+
+                        <strong>location:</strong>
+                        <t t-esc='doc.location'/>
+                        <br/>
+                        <br/>
+
+
+                        <strong>List of Bank Accounts</strong>
+                        <br/>
+                        <ol>
+                            <t t-foreach='doc.partner_credit_bank_ids' t-as='bank'>
+                                <li>
+                                    <div class='row'>
+                                        <div class='col-6'>
+                                            <strong>Bank: </strong>
+                                            <span>
+                                                <t t-esc='bank.name'/>
+                                            </span>
+                                        </div>
+
+                                        <div class='col-6'>
+                                            <strong>Acc#: </strong>
+                                            <span>
+                                                <t t-esc='bank.acc'/>
+                                            </span>
+                                        </div>
+
+
+                                    </div>
+
+                                    <div class='row'>
+                                        <div class='col-3'>
+                                            <strong>Address: </strong>
+                                            <span>
+                                                <t t-esc='bank.address'/>
+                                            </span>
+                                        </div>
+                                        <div class='col-3'>
+                                            <strong>City: </strong>
+                                            <span>
+                                                <t t-esc='bank.city'/>
+                                            </span>
+                                        </div>
+                                        <div class='col-3'>
+                                            <strong>State: </strong>
+                                            <span>
+                                                <t t-esc='bank.state.name'/>
+                                            </span>
+                                        </div>
+                                        <div class='col-3'>
+                                            <strong>Zip: </strong>
+                                            <span>
+                                                <t t-esc='bank.zip'/>
+                                            </span>
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class='row'>
+                                        <div class='col-4'>
+                                            <strong>Officer familliar account: </strong>
+                                            <span>
+                                                <t t-esc='bank.officer_name'/>
+                                            </span>
+                                        </div>
+                                        <div class='col-4'>
+                                            <strong>Phone: </strong>
+                                            <span>
+                                                <t t-esc='bank.office_phone'/>
+                                            </span>
+                                        </div>
+                                        <div class='col-4'>
+                                            <strong>Fax: </strong>
+                                            <span>
+                                                <t t-esc='bank.offier_fax'/>
+                                            </span>
+                                        </div>
+
+                                    </div>
+
+                                </li>
+
+                            </t>
+                        </ol>
+
+                        <br/>
+                        <br/>
+
+
+                        <strong>Trade References</strong>
+                        <br/>
+                        <ol>
+                            <t t-foreach='doc.trade_reference_ids' t-as='trade'>
+                                <li>
+                                    <div class='row'>
+                                        <div class='col-4'>
+                                            <strong>Name: </strong>
+                                            <span>
+                                                <t t-esc='trade.name'/>
+                                            </span>
+                                        </div>
+                                        <div class='col-4'>
+                                            <strong>Phone: </strong>
+                                            <span>
+                                                <t t-esc='trade.phone'/>
+                                            </span>
+                                        </div>
+                                        <div class='col-4'>
+                                            <strong>Fax: </strong>
+                                            <span>
+                                                <t t-esc='trade.fax'/>
+                                            </span>
+                                        </div>
+
+                                    </div>
+
+                                    <div class='row'>
+                                        <div class='col-3'>
+                                            <strong>Address: </strong>
+                                            <span>
+                                                <t t-esc='trade.address'/>
+                                            </span>
+                                        </div>
+                                        <div class='col-3'>
+                                            <strong>City: </strong>
+                                            <span>
+                                                <t t-esc='trade.city'/>
+                                            </span>
+                                        </div>
+                                        <div class='col-3'>
+                                            <strong>State: </strong>
+                                            <span>
+                                                <t t-esc='trade.state.name'/>
+                                            </span>
+                                        </div>
+                                        <div class='col-3'>
+                                            <strong>Zip: </strong>
+                                            <span>
+                                                <t t-esc='trade.zip'/>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <br/>
+                                </li>
+                            </t>
+                        </ol>
+                        <br/>
+                        <br/>
+                        <br/>   
+                        <span>
+    I authorize our bank(s) to furnish financial information required by Price Paper &amp; Twine Company in connection with this application for credit.
+We certify that the above statements are true and authorize Price Paper &amp; Twine Company to investigate the information above for the purposes of obtaining merchandise on
+credit. If the application is a corporation, limited liability company or limited partnership in consideration of granting credit to the applicant, the undersigned individually and
+not as an officer/director/member of applicant absolutely, unconditionally and personally guarantees and promises to pay Price Paper &amp; Twine Company all indebtedness
+owned by applicant whenever created or owned and waive all defenses available to a guarantor and further waives all notices, demands any presentments. This guaranty will
+remain effective until all obligations of applicant are paid in full and all credit relations between Price Paper &amp; Twine Company and the applicant have terminated. I will pay a
+reasonable attorney fee, collection fee and any other reasonable cost incurred in the collection of said account.
+Terms: Credit terms are stated on the invoice under “terms.” Invoices not paid according to terms will be subject to a 2% finance charge per month (21% per annum).
+                        </span>
+                        <br/>
+                        <div class='row'>
+                            <div class='col-4'>
+                                <span> Signature</span>
+                                <img t-att-src="image_data_uri(doc.signature)" style="max-height: 4cm; max-width: 8cm;"/>
+                            </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+
+
+
+        <record id="action_report_saleorder" model="ir.actions.report">
+            <field name="name">Quotation / Order</field>
+            <field name="model">partner.credit</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">portal_enhancements.report_credit_application</field>
+            <field name="report_file">portal_enhancements.report_credit_application</field>
+            <field name="print_report_name">(object.partner_id.name)</field>
+            <field name="binding_model_id" ref="model_partner_credit"/>
+            <field name="binding_type">report</field>
+        </record>
+
+
+
+
+    </data>
+</odoo>

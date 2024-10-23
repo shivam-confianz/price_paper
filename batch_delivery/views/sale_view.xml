@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="batch_delivery_sale_order_view" model="ir.ui.view">
+            <field name="name">inherited.sale.order.form.view.batch</field>
+            <field name="model">sale.order</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <sheet position='before'>
+
+                    <div class="oe_text_center">
+                        <p>
+                            <b>
+                                <field name='order_banner_id' attrs="{'invisible':[('order_banner_id', '=', False)]}" class="alert alert-success mb-0"
+                                       role="alert" width="100%"/>
+                               <!-- <field name='batch_warning' attrs="{'invisible':[('batch_warning', '=', False)]}" class="alert alert-success mb-0"
+                                       role="alert"/>-->
+                            </b>
+                        </p>
+                    </div>
+
+                </sheet>
+                <xpath expr="//field[@name='order_line']/tree/field[@name='qty_delivered']" position="attributes">
+                    <attribute name="optional">hide</attribute>
+                </xpath>
+                <xpath expr="//field[@name='order_line']/tree/field[@name='qty_invoiced']" position="attributes">
+                    <attribute name="optional">hide</attribute>
+                </xpath>
+                <xpath expr="//field[@name='payment_term_id']" position="after">
+                    <field name="have_price_lock" invisible="1"/>
+                </xpath>
+
+                <xpath expr="//field[@name='date_order']" position="after">
+                    <field name="delivery_date" attrs="{'invisible': [('delivery_date', '=', False)]}"/>
+                </xpath>
+
+                <xpath expr="//field[@name='order_line']/tree/field[@name='product_uom']" position="after">
+                    <field name="lot_id" optional="hide"/>
+                </xpath>
+
+                <xpath expr="//field[@name='order_line']/form/group[1]/group[1]/field[@name='price_unit']" position="before">
+                    <field name="lot_id"/>
+                </xpath>
+                <xpath expr="//field[@name='order_line']/form/group[1]/group[1]/field[@name='price_unit']" position="after">
+                    <field name="price_lock" invisible="1"/>
+                    <field name="info" widget="price_lock" string="Lock Info" attrs="{'invisible':[('price_lock', '=', False)]}"/>
+                </xpath>
+                <xpath expr="//field[@name='order_line']/tree/field[@name='price_unit']" position="after">
+                    <field name="price_lock" invisible="1"/>
+                    <field name="info" widget="price_lock" string="Lock Info"
+                           attrs="{'column_invisible':[('parent.have_price_lock', '=', False)], 'invisible':[('price_lock', '=', False)]}"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="product_product_common_inherit_stock_orderpoint" model="ir.ui.view">
+            <field name="name">product.product.common.stock.orderpoint</field>
+            <field name="model">product.product</field>
+            <field name="groups_id" eval="[(4, ref('stock.group_stock_user'))]"/>
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='uom_po_id']" position="after">
+                    <field name="forecast_days"/>
+                    <field name="orderpoint_update_date"/>
+                    <field name="past_days"/>
+                    <field name="dont_use_fbprophet"/>
+                </xpath>
+            </field>
+        </record>
+
+
+        <record id="product_stock_order_point_inherit" model="ir.ui.view">
+            <field name="name">product.common.stock.orderpoint.inherit</field>
+            <field name="model">product.product</field>
+            <field name="groups_id" eval="[(4, ref('stock.group_stock_user'))]"/>
+            <field name="inherit_id" ref="stock.product_form_view_procurement_button"/>
+            <field name="arch" type="xml">
+                 <xpath expr="//button[@name='action_view_orderpoints']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//button[@name='action_view_orderpoints']" position="after">
+                    <button class="oe_stat_button" name="get_number_of_days" type="object" string="View Sales Forecast"
+                            icon="fa-signal"/>
+                    <button name="action_view_orderpoints" type="object"
+                            attrs="{'invisible':['|',('type', 'not in', ['product', 'consu']),('nbr_reordering_rules', '!=', 1)]}"
+                            class="oe_stat_button" icon="fa-refresh">
+                            <div class="o_field_widget o_stat_info mr4">
+                                <span class="o_stat_text">Min:</span>
+                                <span class="o_stat_text">Max:</span>
+                            </div>
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value"><field name="reordering_min_qty"/></span>
+                                <span class="o_stat_value"><field name="reordering_max_qty"/></span>
+                            </div>
+                        </button>
+                    <button type="object"
+                            name= "action_view_stock_move_lines"
+                            attrs="{'invisible':[('type', 'not in', ['product', 'consu'])]}"
+                            class="oe_stat_button" icon="fa-exchange"
+                            groups="stock.group_stock_user">
+                            <div class="o_field_widget o_stat_info mr4">
+                                <span class="o_stat_text">In:</span>
+                                <span class="o_stat_text">Out:</span>
+                            </div>
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value"><field name="nbr_moves_in"/></span>
+                                <span class="o_stat_value"><field name="nbr_moves_out"/></span>
+                            </div>
+                        </button>
+                </xpath>
+
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button class="oe_stat_button" name="reset_orderpoint" type="object" string="Reset Orderpoint"
+                            icon="fa-refresh"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="product_supplierinfo_form_view_inherit_price_paper">
+             <field name="model">product.supplierinfo</field>
+             <field name="inherit_id" ref="product.product_supplierinfo_form_view"/>
+             <field name="arch" type="xml">
+                 <xpath expr="//field[@name='name']" position="attributes">
+                    <attribute name="domain">['|',('parent_id', '=',False),('company_id','in', [company_id,False])]</attribute>
+                </xpath>
+                 <xpath expr="//field[@name='product_code']" position="after">
+                    <label for="manual_delay"/>
+                    <div>
+                        <field name="manual_delay" class="oe_inline"/> days
+                    </div>
+                  </xpath>
+                  <xpath expr="//div[2]" position="attributes">
+                      <attribute name="invisible">1</attribute>
+                  </xpath>
+                  <xpath expr="//label[@for='delay']" position="attributes">
+                      <attribute name="invisible">1</attribute>
+                  </xpath>
+             </field>
+         </record>
+
+
+        <record id="product_supplierinfo_tree_view_inherit_pricepaper" model="ir.ui.view">
+            <field name="name">roduct.supplierinfo.form.view_inherit_pricepaper</field>
+            <field name="model">product.supplierinfo</field>
+            <field name="inherit_id" ref="product.product_supplierinfo_tree_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='name']" position="attributes">
+                    <attribute name="domain">['&amp;',('parent_id', '=',False),('company_id','in', [company_id,False])]</attribute>
+                </xpath>
+                <xpath expr="//field[@name='date_end']" position="after">
+                    <field name="is_available" invisible="1"/>
+                </xpath>
+                <xpath expr="//field[@name='currency_id']" position="attributes">
+                  <attribute name="optional">hide</attribute>
+                </xpath>
+                <xpath expr="//field[@name='date_end']" position="attributes">
+                  <attribute name="optional">show</attribute>
+                </xpath>
+                <xpath expr="//field[@name='date_start']" position="attributes">
+                  <attribute name="optional">show</attribute>
+                </xpath>
+                <xpath expr="//field[@name='product_code']" position="attributes">
+                  <attribute name="optional">show</attribute>
+                </xpath>
+                <xpath expr="//tree" position="attributes">
+                    <attribute name="decoration-danger">date_end != False and date_end &lt; current_date</attribute>
+                </xpath>
+                <xpath expr="//field[@name='delay']" position="before">
+                  <field name="manual_delay"/>
+                </xpath>
+                <xpath expr="//field[@name='delay']" position="attributes">
+                   <attribute name="invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
+        <record id="action_reset_order_point" model="ir.actions.server">
+            <field name="name">Reset Reordering Rule</field>
+            <field name="model_id" ref="product.model_product_product"/>
+            <field name="binding_model_id" ref="product.model_product_product"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = records.action_reset_order_point()
+            </field>
+        </record>
+    </data>
+</odoo>

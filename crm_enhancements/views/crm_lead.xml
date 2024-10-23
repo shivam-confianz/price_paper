@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="crm_enhance_lead_inherit_15" model="ir.ui.view">
+            <field name="name">crm.lead.crm.enhance</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook[1]" position="inside">
+                    <page string="Prospect Values" autofocus="autofocus">
+                        <field name="company_currency" invisible="1"/>
+                        <group col="4">
+                            <field name="rev_per_trans" widget="monetary" options="{'currency_field': 'company_currency'}"/>
+                            <field name="business_freq"/>
+                        </group>
+                    </page>
+                </xpath>
+
+                <xpath expr="//field[@name='user_id']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

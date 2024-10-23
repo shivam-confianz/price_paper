@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="invoice_form_inherited_autherize_ext" model="ir.ui.view">
+            <field name="name">account.move.form</field>
+            <field name="model">account.move</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='button_draft']" position="after">
+                    <field name='is_authorize_tx_failed' invisible='1'/>
+                    <button name="action_reauthorize_transaction" type="object" string="Reauthorize Payment" class="oe_highlight"
+                          attrs="{'invisible':[('is_authorize_tx_failed', '=', False)]}"/>
+                    <button name="add_transaction_to_invoice" type="object" string="Add transaction ref"
+                      attrs="{'invisible':['|', ('payment_state', 'in', ('paid', 'in_payment')), ('move_type', 'not in', ('out_invoice', 'out_refund'))]}"/>
+                </xpath>
+                <xpath expr="//div[@name='journal_div']" position="after">
+                    <field name='an_transaction_ref'
+                      attrs="{'invisible':[('an_transaction_ref', '=', False)], 'readonly': True}" force_save='1'/>
+                      <field name='an_bank_tx_ref'
+                        attrs="{'invisible':[('an_bank_tx_ref', '=', False)], 'readonly': True}" force_save='1'/>
+                </xpath>
+                <xpath expr="//field[@name='invoice_payments_widget']" position="after">
+                    <field name="transaction_fee" widget="monetary" string='Credit Card Fee'
+                           options="{'currency_field': 'currency_id', 'field_digits': True}"
+                           attrs="{'invisible':[('transaction_fee','=', 0)]}" class="oe_subtotal_footer_separator"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

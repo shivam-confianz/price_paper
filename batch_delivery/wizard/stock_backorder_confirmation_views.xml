@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_cancel_back_order_form" model="ir.ui.view">
+        <field name="name">stock_backorder_confirmation</field>
+        <field name="model">stock.backorder.confirmation</field>
+        <field name="arch" type="xml">
+            <form string="Immediate transfer">
+                    <p>
+                        You have processed less products than the initial demand.
+                    </p><p class="text-muted">
+                        Odoo will process all the non-zero quantities and cancel the remaining products.
+                    </p>
+                <footer>
+                    <button name="process_cancel_backorder" string="Apply" type="object" class="btn-success" data-hotkey="q" context="{'back_order_cancel': True}"/>
+                    <button string="Cancel" class="btn-danger" special="cancel" data-hotkey="c"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

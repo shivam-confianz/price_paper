@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <template id="commission_audit_template">
+        <t t-call="web.html_container">
+          <t t-set="salespersons" t-value="get_commission_lines(docs)"/>
+          <t t-foreach="salespersons" t-as="rep_id">
+            <div class="page">
+               <style>
+                  .o_main_table td {
+                      padding: 0.25rem;
+                      vertical-align: top;
+                      border-top: 1px solid black;
+                  }
+               </style>
+              <table class="table table-sm o_main_table" style="width:100%">
+                <thead>
+                    <tr>
+                        <th><strong>Invoice</strong></th>
+                        <th><strong>Partner</strong></th>
+                        <th><strong>Sale Rep</strong></th>
+                        <th><strong>Commission</strong></th>
+                        <th><strong>Real Commission</strong></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-set="partners" t-value="salespersons[rep_id]"/>
+                    <t t-foreach="partners" t-as="partner_id">
+                      <t t-set="invoices" t-value="partners[partner_id]"/>
+                      <t t-foreach="invoices" t-as="invoice_id">
+                          <t t-set="commission_list" t-value="invoices[invoice_id]"/>
+                          <t t-foreach="commission_list" t-as="commission">
+                              <tr>
+                                  <td>
+                                      <span>
+                                      <t t-esc="invoice_id.name"/>
+                                      </span>
+                                  </td>
+                                  <td>
+                                      <span >
+                                      <t t-esc="partner_id.name"/>
+                                      </span>
+                                  </td>
+                                  <td>
+                                      <span>
+                                      <t t-esc="rep_id.name"/>
+                                      </span>
+                                  </td>
+                                  <td>
+                                      <span>
+                                      <t t-esc="'%.2f'% commission['old_commission']"/>
+                                      </span>
+                                  </td>
+                                  <td>
+                                      <span>
+                                      <t t-esc="'%.2f'% commission['commission_audit']"/>
+                                      </span>
+                                  </td>
+                              </tr>
+                    </t>
+                  </t>
+                </t>
+                </tbody>
+              </table>
+            </div>
+          </t>
+        </t>
+    </template>
+
+    <template id="report_commission_audit">
+        <t t-call="sales_commission.commission_audit_template"/>
+    </template>
+
+</odoo>
