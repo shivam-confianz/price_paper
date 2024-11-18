@@ -8,11 +8,18 @@ class WebsiteOrderSheet(models.Model):
     _description='Model for managing Partner order sheet'
     
 
-    name = fields.Char(string='Name')
-    partner_id = fields.Many2one('res.partner','Partner')
+    name = fields.Char(string='Name',copy=False)
+    partner_id = fields.Many2one('res.partner','Partner',copy=False)
     order_lines = fields.One2many('order.sheet.lines','sheet_id',string='Order Lines',copy=True)
+
+    @api.onchange('partner_id')
+    def change_partner_id(self):
+        for rec in self:
+            if rec.partner_id:
+                rec.name = f'[{rec.partner_id.customer_code}]{rec.partner_id.display_name}'
     _sql_constraints = [
-        ('sheet_uniq_partner', 'unique (partner_id)', 'The Partner Must be Unique per sheet !')
+        ('sheet_uniq_partner', 'unique (partner_id)', 'The Partner Must be Unique per sheet !'),
+        ('sheet_uniq_name', 'unique (name)', 'The Name Must be Unique per sheet !')
     ]
 
 class OrderSheetLines(models.Model):
@@ -22,7 +29,7 @@ class OrderSheetLines(models.Model):
 
 
     sequence = fields.Integer(string='Sequence')
-    sheet_id = fields.Many2one('website.order.sheet',required=True,string="Sheet")
+    sheet_id = fields.Many2one('website.order.sheet',required=True,string="Sheet",ondelete='cascade')
     partner_id = fields.Many2one('res.partner','Partner')
     new_sheet_id = fields.Many2one('website.order.sheet',string="Sheet")
     section = fields.Char(string='Section Name',required=True)
@@ -73,7 +80,7 @@ class LineProduct(models.Model):
     _rec_name='product_id'
     
     sequence = fields.Integer(string='Sequence')
-    sheet_line_id = fields.Many2one('order.sheet.lines',string='Order Sheet Line')
+    sheet_line_id = fields.Many2one('order.sheet.lines',string='Order Sheet Line',ondelete='cascade')
     product_id = fields.Many2one('product.product',string='Product')
     default_code = fields.Char(string='Internal Refernce',related='product_id.default_code')
     sale_uoms = fields.Many2many('uom.uom',related='product_id.sale_uoms')
@@ -91,8 +98,8 @@ class LineProduct(models.Model):
             ("state","in",["done","sale"])
             ],limit=100,order='confirmation_date asc').mapped("product_uom_qty")
         # print(product_uom_qty)
-        # return product_uom_qty
-        return [1,2,3,4,5,6,7,8,9,10,2,3,4,5,6,7,8,11,22,4,5,6,7]
+        return product_uom_qty
+        
 
     @api.onchange('product_id')
     def change_product_id(self):

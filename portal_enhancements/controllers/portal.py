@@ -462,9 +462,11 @@ class CustomerPortal(portal.CustomerPortal):
             main_company = request.env['res.partner'].sudo().browse([int(curr_comapny)])
             if kwargs.get('document_sign'):
                 main_company.businesss_registration_information=True
-        if len(portal_companies)==1 and not curr_comapny:
+
+        if not curr_comapny and portal_companies:
             request.session['current_website_company'] = int(portal_companies[0].id)
-            company_id = curr_comapny = portal_companies[0]
+            company_id = main_company = portal_companies[0]
+            curr_comapny = company_id.id
             if company_id.is_verified:
                 orders = request.env['sale.order'].search_count(
                     [('partner_id', '=', int(company_id)), ('state', '=', 'draft')])

@@ -9,10 +9,10 @@
                     <sheet>
                         <group>
                             <group>
-                                <field name='name'/>
+                                <field name='partner_id'/>
                             </group>
                             <group>
-                                <field name='partner_id'/>
+                                <field name='name'/>
                             </group>
                         </group>
                         <notebook>
